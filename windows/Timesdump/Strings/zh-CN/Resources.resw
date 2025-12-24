@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Menu Items -->
+  <data name="Menu_Status_Monitoring" xml:space="preserve">
+    <value>监听中</value>
+  </data>
+  <data name="Menu_Status_Paused" xml:space="preserve">
+    <value>已暂停</value>
+  </data>
+  <data name="Menu_Pause" xml:space="preserve">
+    <value>暂停</value>
+  </data>
+  <data name="Menu_Resume" xml:space="preserve">
+    <value>恢复</value>
+  </data>
+  <data name="Menu_Settings" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="Menu_Exit" xml:space="preserve">
+    <value>退出</value>
+  </data>
+  
+  <!-- HUD -->
+  <data name="HUD_ClickToCopy" xml:space="preserve">
+    <value>点击复制</value>
+  </data>
+  <data name="Result_Unit_Seconds" xml:space="preserve">
+    <value>秒</value>
+  </data>
+  <data name="Result_Unit_Milliseconds" xml:space="preserve">
+    <value>毫秒</value>
+  </data>
+  
+  <!-- Settings -->
+  <data name="Settings_Title" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="Settings_Tab_General" xml:space="preserve">
+    <value>通用</value>
+  </data>
+  <data name="Settings_Tab_Filter" xml:space="preserve">
+    <value>过滤</value>
+  </data>
+  <data name="Settings_Tab_About" xml:space="preserve">
+    <value>关于</value>
+  </data>
+  <data name="Settings_LaunchAtStartup" xml:space="preserve">
+    <value>开机自启</value>
+  </data>
+  <data name="Settings_HUDPosition" xml:space="preserve">
+    <value>弹窗位置</value>
+  </data>
+  <data name="Settings_DisplayDuration" xml:space="preserve">
+    <value>显示时长</value>
+  </data>
+  <data name="Settings_TimeFormat" xml:space="preserve">
+    <value>时间格式</value>
+  </data>
+  
+  <!-- Position Options -->
+  <data name="Position_FollowMouse" xml:space="preserve">
+    <value>跟随鼠标</value>
+  </data>
+  <data name="Position_TopLeft" xml:space="preserve">
+    <value>左上角</value>
+  </data>
+  <data name="Position_TopRight" xml:space="preserve">
+    <value>右上角</value>
+  </data>
+  <data name="Position_BottomLeft" xml:space="preserve">
+    <value>左下角</value>
+  </data>
+  <data name="Position_BottomRight" xml:space="preserve">
+    <value>右下角</value>
+  </data>
+  <data name="Position_Center" xml:space="preserve">
+    <value>屏幕中央</value>
+  </data>
+  
+  <!-- Format Options -->
+  <data name="Format_Chinese" xml:space="preserve">
+    <value>YYYY年MM月DD日 HH:mm:ss</value>
+  </data>
+  
+  <!-- Filter Settings -->
+  <data name="Settings_YearRange" xml:space="preserve">
+    <value>有效年份范围</value>
+  </data>
+  <data name="Settings_YearRange_Description" xml:space="preserve">
+    <value>超出此范围的时间戳将被忽略</value>
+  </data>
+  <data name="Settings_MinYear" xml:space="preserve">
+    <value>最小年份</value>
+  </data>
+  <data name="Settings_MaxYear" xml:space="preserve">
+    <value>最大年份</value>
+  </data>
+  
+  <!-- About -->
+  <data name="About_Tagline" xml:space="preserve">
+    <value>静默时间戳解析器</value>
+  </data>
+</root>
