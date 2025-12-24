@@ -1,0 +1,95 @@
+name: Build Artifacts
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build'
+        required: true
+        default: 'main'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build-macos:
+    name: Build macOS
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.branch || github.ref }}
+    
+    - name: Select Xcode version
+      run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+    
+    - name: Show Xcode version
+      run: xcodebuild -version
+    
+    - name: Build Timesdump
+      working-directory: macos/Timesdump
+      run: |
+        xcodebuild build \
+          -project Timesdump.xcodeproj \
+          -scheme Timesdump \
+          -destination 'platform=macOS' \
+          -configuration Release \
+          -derivedDataPath build \
+          CODE_SIGN_IDENTITY="" \
+          CODE_SIGNING_REQUIRED=NO \
+          CODE_SIGNING_ALLOWED=NO
+    
+    - name: Create app bundle archive
+      working-directory: macos/Timesdump
+      run: |
+        cd build/Build/Products/Release
+        zip -r Timesdump-macOS.zip Timesdump.app
+    
+    - name: Upload macOS artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Timesdump-macOS
+        path: macos/Timesdump/build/Build/Products/Release/Timesdump-macOS.zip
+        retention-days: 30
+
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.branch || github.ref }}
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+        dotnet-quality: 'preview'
+    
+    - name: Restore dependencies
+      working-directory: windows
+      run: dotnet restore Timesdump.sln
+    
+    - name: Publish Windows App
+      working-directory: windows
+      run: dotnet publish Timesdump/Timesdump.csproj --configuration Release --output ./publish
+    
+    - name: Create archive
+      working-directory: windows
+      run: Compress-Archive -Path ./publish/* -DestinationPath Timesdump-Windows.zip
+    
+    - name: Upload Windows artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Timesdump-Windows
+        path: windows/Timesdump-Windows.zip
+        retention-days: 30
