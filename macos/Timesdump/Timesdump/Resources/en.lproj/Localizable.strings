@@ -1,0 +1,43 @@
+/* Menu Bar */
+"menu.icon.description" = "Timesdump icon";
+"menu.status.monitoring" = "Monitoring";
+"menu.status.paused" = "Paused";
+"menu.pause" = "Pause";
+"menu.resume" = "Resume";
+"menu.history" = "History";
+"menu.history.empty" = "No history";
+"menu.settings" = "Settings...";
+"menu.quit" = "Quit Timesdump";
+
+/* HUD */
+"hud.clickToCopy" = "Click to copy";
+"result.unit.seconds" = "seconds";
+"result.unit.milliseconds" = "milliseconds";
+
+/* Settings */
+"settings.title" = "Settings";
+"settings.tab.general" = "General";
+"settings.tab.filter" = "Filter";
+"settings.tab.about" = "About";
+
+"settings.launchAtLogin" = "Launch at Login";
+"settings.hudPosition" = "HUD Position";
+"settings.displayDuration" = "Display Duration";
+"settings.timeFormat" = "Time Format";
+
+"settings.position.followMouse" = "Follow Mouse";
+"settings.position.topLeft" = "Top Left";
+"settings.position.topRight" = "Top Right";
+"settings.position.bottomLeft" = "Bottom Left";
+"settings.position.bottomRight" = "Bottom Right";
+"settings.position.center" = "Center";
+
+"settings.format.chinese" = "YYYY年MM月DD日 HH:mm:ss";
+
+"settings.yearRange" = "Valid Year Range";
+"settings.yearRange.description" = "Timestamps outside this range will be ignored";
+"settings.minYear" = "Min Year";
+"settings.maxYear" = "Max Year";
+
+/* About */
+"about.tagline" = "The Silent Timestamp Decoder";

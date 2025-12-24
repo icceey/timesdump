@@ -1,0 +1,43 @@
+/* Menu Bar */
+"menu.icon.description" = "Timesdump 图标";
+"menu.status.monitoring" = "监听中";
+"menu.status.paused" = "已暂停";
+"menu.pause" = "暂停";
+"menu.resume" = "恢复";
+"menu.history" = "历史记录";
+"menu.history.empty" = "暂无记录";
+"menu.settings" = "设置...";
+"menu.quit" = "退出 Timesdump";
+
+/* HUD */
+"hud.clickToCopy" = "点击复制";
+"result.unit.seconds" = "秒";
+"result.unit.milliseconds" = "毫秒";
+
+/* Settings */
+"settings.title" = "设置";
+"settings.tab.general" = "通用";
+"settings.tab.filter" = "过滤";
+"settings.tab.about" = "关于";
+
+"settings.launchAtLogin" = "开机自启";
+"settings.hudPosition" = "弹窗位置";
+"settings.displayDuration" = "显示时长";
+"settings.timeFormat" = "时间格式";
+
+"settings.position.followMouse" = "跟随鼠标";
+"settings.position.topLeft" = "左上角";
+"settings.position.topRight" = "右上角";
+"settings.position.bottomLeft" = "左下角";
+"settings.position.bottomRight" = "右下角";
+"settings.position.center" = "屏幕中央";
+
+"settings.format.chinese" = "YYYY年MM月DD日 HH:mm:ss";
+
+"settings.yearRange" = "有效年份范围";
+"settings.yearRange.description" = "超出此范围的时间戳将被忽略";
+"settings.minYear" = "最小年份";
+"settings.maxYear" = "最大年份";
+
+/* About */
+"about.tagline" = "静默时间戳解析器";

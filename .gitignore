@@ -1,0 +1,157 @@
+# ===== Combined .gitignore for Timesdump Monorepo =====
+
+# ======================== macOS / Xcode ========================
+
+## Build generated
+macos/**/build/
+macos/**/DerivedData/
+
+## Various settings
+macos/**/*.pbxuser
+!macos/**/default.pbxuser
+macos/**/*.mode1v3
+!macos/**/default.mode1v3
+macos/**/*.mode2v3
+!macos/**/default.mode2v3
+macos/**/*.perspectivev3
+!macos/**/default.perspectivev3
+macos/**/xcuserdata/
+
+## Other
+macos/**/*.moved-aside
+macos/**/*.xccheckout
+macos/**/*.xcscmblueprint
+
+## Obj-C/Swift specific
+macos/**/*.hmap
+macos/**/*.ipa
+macos/**/*.dSYM.zip
+macos/**/*.dSYM
+
+## Playgrounds
+macos/**/timeline.xctimeline
+macos/**/playground.xcworkspace
+
+## Swift Package Manager
+macos/**/.build/
+macos/**/Packages/
+macos/**/Package.resolved
+macos/**/.swiftpm
+
+## CocoaPods
+macos/**/Pods/
+
+## Carthage
+macos/**/Carthage/Build
+
+## Accio
+macos/**/Dependencies/
+macos/**/.accio/
+
+## fastlane
+macos/**/fastlane/report.xml
+macos/**/fastlane/Preview.html
+macos/**/fastlane/screenshots
+macos/**/fastlane/test_output
+
+## Code Injection
+macos/**/.inject.cpp
+macos/**/.inject.h
+macos/**/.inject.cpp.hashes.txt
+
+# ======================== .NET / Visual Studio ========================
+
+## User-specific files
+windows/**/*.rsuser
+windows/**/*.suo
+windows/**/*.user
+windows/**/*.userosscache
+windows/**/*.sln.docstates
+
+## User-specific files (MonoDevelop/Xamarin Studio)
+windows/**/*.userprefs
+
+## Build results
+windows/**/[Dd]ebug/
+windows/**/[Dd]ebugPublic/
+windows/**/[Rr]elease/
+windows/**/[Rr]eleases/
+windows/**/x64/
+windows/**/x86/
+windows/**/[Ww][Ii][Nn]32/
+windows/**/[Aa][Rr][Mm]/
+windows/**/[Aa][Rr][Mm]64/
+windows/**/bld/
+windows/**/[Bb]in/
+windows/**/[Oo]bj/
+windows/**/[Ll]og/
+windows/**/[Ll]ogs/
+
+## Visual Studio cache/options directory
+windows/**/.vs/
+
+## MSTest test Results
+windows/**/[Tt]est[Rr]esult*/
+windows/**/[Bb]uild[Ll]og.*
+
+## NuGet Packages
+windows/**/*.nupkg
+windows/**/*.snupkg
+windows/**/.nuget/
+windows/**/packages/
+!windows/**/packages/build/
+
+## Visual Studio LightSwitch
+windows/**/GeneratedArtifacts/
+windows/**/ModelManifest.xml
+windows/**/$tf/
+
+## Windows Store app packages
+windows/**/*.appx
+windows/**/*.appxbundle
+windows/**/*.appxupload
+
+## MSIX packages
+windows/**/*.msix
+windows/**/*.msixbundle
+windows/**/*.msixupload
+
+## NuGet package restore
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## JetBrains Rider
+windows/**/.idea/
+windows/**/*.sln.iml
+
+# ======================== General ========================
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+## Thumbnails
+Thumbs.db
+ehthumbs.db
+
+## Folders to ignore
+node_modules/
+.tmp/
+tmp/
+
+## IDE
+.vscode/
+*.swp
+*.swo
+*~
+
+## Logs
+*.log
+
+## Archives
+*.zip
+*.tar.gz
+*.rar
