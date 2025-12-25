@@ -3,6 +3,12 @@ import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { useTranslation } from "react-i18next";
 
+/** Default display duration in milliseconds */
+const DEFAULT_DISPLAY_DURATION_MS = 3000;
+
+/** Shorter duration when resuming from hover */
+const HOVER_RESUME_DURATION_MS = 2000;
+
 interface HudPayload {
   formatted_time: string;
   raw_value: string;
@@ -16,9 +22,23 @@ export default function HudView() {
   const [visible, setVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [hideTimeout, setHideTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [displayDuration, setDisplayDuration] = useState(DEFAULT_DISPLAY_DURATION_MS);
+
+  // Load display duration from settings
+  useEffect(() => {
+    invoke<{ display_duration_ms: number }>("load_settings")
+      .then((settings) => {
+        if (settings?.display_duration_ms) {
+          setDisplayDuration(settings.display_duration_ms);
+        }
+      })
+      .catch(() => {
+        // Use default if settings can't be loaded
+      });
+  }, []);
 
   // Auto-hide logic
-  const scheduleHide = useCallback((duration: number = 3000) => {
+  const scheduleHide = useCallback((duration: number = displayDuration) => {
     if (hideTimeout) {
       clearTimeout(hideTimeout);
     }
@@ -27,14 +47,14 @@ export default function HudView() {
       invoke("hide_hud").catch(console.error);
     }, duration);
     setHideTimeout(timeout);
-  }, [hideTimeout]);
+  }, [hideTimeout, displayDuration]);
 
   // Listen for show_hud events from Rust
   useEffect(() => {
     const unlisten = listen<HudPayload>("show_hud", (event) => {
       setPayload(event.payload);
       setVisible(true);
-      scheduleHide(3000);
+      scheduleHide(displayDuration);
     });
 
     return () => {
@@ -51,7 +71,7 @@ export default function HudView() {
       clearTimeout(hideTimeout);
       setHideTimeout(null);
     } else if (!isHovered && visible) {
-      scheduleHide(2000); // Resume with shorter duration
+      scheduleHide(HOVER_RESUME_DURATION_MS); // Resume with shorter duration
     }
   }, [isHovered, visible]);
 

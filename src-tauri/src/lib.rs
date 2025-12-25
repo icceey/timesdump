@@ -99,6 +99,9 @@ impl TimeParser {
     }
 }
 
+/// Default clipboard polling interval in milliseconds
+const CLIPBOARD_POLL_INTERVAL_MS: u64 = 350;
+
 /// ClipboardMonitor polls the clipboard and emits events when valid timestamps are detected
 pub struct ClipboardMonitor {
     parser: Arc<Mutex<TimeParser>>,
@@ -151,7 +154,7 @@ impl ClipboardMonitor {
             };
 
             loop {
-                thread::sleep(Duration::from_millis(350));
+                thread::sleep(Duration::from_millis(CLIPBOARD_POLL_INTERVAL_MS));
 
                 // Check if monitoring is paused
                 if !*running.lock().unwrap() {

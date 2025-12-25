@@ -1,6 +1,10 @@
 use tauri::WebviewWindow;
 use log::debug;
 
+/// Offset in pixels from cursor position to window position
+#[cfg(any(target_os = "macos", target_os = "windows"))]
+const CURSOR_OFFSET: i32 = 20;
+
 /// Setup the ghost window with platform-specific non-activating behavior
 pub fn setup_ghost_window(window: &WebviewWindow) {
     #[cfg(target_os = "macos")]
@@ -34,8 +38,9 @@ fn setup_ghost_window_macos(window: &WebviewWindow) {
             
             // Make window non-activating (won't steal focus)
             // NSNonactivatingPanelMask = 1 << 7 = 128
+            const NS_NONACTIVATING_PANEL_MASK: i64 = 1 << 7;
             let style_mask = ns_win.styleMask();
-            ns_win.setStyleMask_(style_mask | (1 << 7));
+            ns_win.setStyleMask_(style_mask | NS_NONACTIVATING_PANEL_MASK);
             
             // Ignore mouse events for focus purposes but allow clicks
             ns_win.setIgnoresMouseEvents_(cocoa::base::NO);
@@ -68,8 +73,8 @@ pub fn position_near_cursor_macos(window: &WebviewWindow) {
             let scale_factor = monitor.scale_factor();
             
             // Convert from macOS coordinates (bottom-left) to screen coordinates (top-left)
-            let x = (mouse_location.x * scale_factor) as i32 + 20;
-            let y = ((screen_height / scale_factor - mouse_location.y) * scale_factor) as i32 + 20;
+            let x = (mouse_location.x * scale_factor) as i32 + CURSOR_OFFSET;
+            let y = ((screen_height / scale_factor - mouse_location.y) * scale_factor) as i32 + CURSOR_OFFSET;
             
             let _ = window.set_position(PhysicalPosition::new(x, y));
             debug!("Positioned window at ({}, {})", x, y);
@@ -134,8 +139,8 @@ pub fn position_near_cursor_windows(window: &WebviewWindow) {
         let mut point = POINT::default();
         if GetCursorPos(&mut point).is_ok() {
             // Position window slightly offset from cursor
-            let x = point.x + 20;
-            let y = point.y + 20;
+            let x = point.x + CURSOR_OFFSET;
+            let y = point.y + CURSOR_OFFSET;
             
             let _ = window.set_position(PhysicalPosition::new(x, y));
             debug!("Positioned window at ({}, {})", x, y);
