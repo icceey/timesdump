@@ -1,0 +1,47 @@
+[package]
+name = "timesdump"
+version = "0.1.0"
+description = "The Silent Timestamp Decoder"
+authors = ["Timesdump Team"]
+edition = "2021"
+
+[lib]
+name = "timesdump_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-positioner = { version = "2", features = ["tray-icon"] }
+tauri-plugin-clipboard-manager = "2"
+tauri-plugin-autostart = "2"
+tauri-plugin-store = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }
+arboard = "3"
+log = "0.4"
+env_logger = "0.11"
+sys-locale = "0.3"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+cocoa = "0.26"
+objc = "0.2"
+window-vibrancy = "0.5"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_Graphics_Gdi"
+] }
+window-vibrancy = "0.5"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+window-vibrancy = "0.5"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
