@@ -1,0 +1,27 @@
+{
+  "hud": {
+    "seconds": "秒",
+    "milliseconds": "毫秒",
+    "clickToCopy": "点击复制"
+  },
+  "settings": {
+    "title": "设置",
+    "general": "通用",
+    "launchAtLogin": "开机自启",
+    "launchAtLoginDesc": "登录时自动启动 Timesdump",
+    "displayDuration": "显示时长",
+    "timeFormat": "时间格式",
+    "filter": "过滤",
+    "yearRange": "年份范围",
+    "yearRangeDesc": "仅显示此年份范围内的时间戳",
+    "save": "保存设置",
+    "saving": "保存中...",
+    "tagline": "静默时间戳解码器"
+  },
+  "tray": {
+    "pause": "暂停",
+    "resume": "恢复",
+    "settings": "设置",
+    "quit": "退出"
+  }
+}

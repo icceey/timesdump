@@ -1,0 +1,27 @@
+{
+  "hud": {
+    "seconds": "Seconds",
+    "milliseconds": "Milliseconds",
+    "clickToCopy": "Click to copy"
+  },
+  "settings": {
+    "title": "Settings",
+    "general": "General",
+    "launchAtLogin": "Launch at Login",
+    "launchAtLoginDesc": "Automatically start Timesdump when you log in",
+    "displayDuration": "Display Duration",
+    "timeFormat": "Time Format",
+    "filter": "Filter",
+    "yearRange": "Year Range",
+    "yearRangeDesc": "Only show timestamps within this year range",
+    "save": "Save Settings",
+    "saving": "Saving...",
+    "tagline": "The Silent Timestamp Decoder"
+  },
+  "tray": {
+    "pause": "Pause",
+    "resume": "Resume",
+    "settings": "Settings",
+    "quit": "Quit"
+  }
+}
