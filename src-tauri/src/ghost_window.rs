@@ -19,33 +19,37 @@ pub fn setup_ghost_window(window: &WebviewWindow) {
 
 #[cfg(target_os = "macos")]
 fn setup_ghost_window_macos(window: &WebviewWindow) {
-    use cocoa::appkit::{NSWindow, NSWindowCollectionBehavior, NSWindowLevel};
-    use cocoa::base::id;
+    use objc2::msg_send;
+    use objc2::runtime::AnyObject;
+    use objc2_app_kit::{NSFloatingWindowLevel, NSWindowCollectionBehavior, NSWindowStyleMask};
+
+    // NSNonactivatingPanelMask is not exposed directly in objc2-app-kit
+    // This mask prevents the window from activating when clicked
+    const NS_NONACTIVATING_PANEL_MASK: usize = 1 << 7;
 
     if let Ok(ns_window) = window.ns_window() {
         unsafe {
-            let ns_win = ns_window as id;
+            let ns_win = ns_window as *mut AnyObject;
 
             // Set window level to floating (above normal windows)
-            ns_win.setLevel_(NSWindowLevel::NSFloatingWindowLevel as i64);
+            let _: () = msg_send![ns_win, setLevel: NSFloatingWindowLevel];
 
             // Configure collection behavior for all spaces and full screen support
-            let behavior = NSWindowCollectionBehavior::NSWindowCollectionBehaviorCanJoinAllSpaces
-                | NSWindowCollectionBehavior::NSWindowCollectionBehaviorFullScreenAuxiliary
-                | NSWindowCollectionBehavior::NSWindowCollectionBehaviorTransient;
-            ns_win.setCollectionBehavior_(behavior);
+            let behavior = NSWindowCollectionBehavior::CanJoinAllSpaces
+                | NSWindowCollectionBehavior::FullScreenAuxiliary
+                | NSWindowCollectionBehavior::Transient;
+            let _: () = msg_send![ns_win, setCollectionBehavior: behavior];
 
             // Make window non-activating (won't steal focus)
-            // NSNonactivatingPanelMask = 1 << 7 = 128
-            const NS_NONACTIVATING_PANEL_MASK: i64 = 1 << 7;
-            let style_mask = ns_win.styleMask();
-            ns_win.setStyleMask_(style_mask | NS_NONACTIVATING_PANEL_MASK);
+            let style_mask: NSWindowStyleMask = msg_send![ns_win, styleMask];
+            let new_style = NSWindowStyleMask(style_mask.0 | NS_NONACTIVATING_PANEL_MASK);
+            let _: () = msg_send![ns_win, setStyleMask: new_style];
 
             // Ignore mouse events for focus purposes but allow clicks
-            ns_win.setIgnoresMouseEvents_(cocoa::base::NO);
+            let _: () = msg_send![ns_win, setIgnoresMouseEvents: false];
 
             // Don't show in mission control
-            ns_win.setHidesOnDeactivate_(cocoa::base::NO);
+            let _: () = msg_send![ns_win, setHidesOnDeactivate: false];
 
             debug!("macOS ghost window configured");
         }
@@ -64,12 +68,15 @@ fn setup_ghost_window_macos(window: &WebviewWindow) {
 
 #[cfg(target_os = "macos")]
 pub fn position_near_cursor_macos(window: &WebviewWindow) {
-    use cocoa::appkit::NSEvent;
-    use cocoa::foundation::NSPoint;
+    use objc2::msg_send;
+    use objc2::runtime::AnyObject;
+    use objc2_app_kit::NSEvent;
+    use objc2_foundation::NSPoint;
     use tauri::PhysicalPosition;
 
     unsafe {
-        let mouse_location: NSPoint = NSEvent::mouseLocation(cocoa::base::nil);
+        // Get mouse location using class method on NSEvent
+        let mouse_location: NSPoint = msg_send![objc2::class!(NSEvent), mouseLocation];
 
         // Get screen height for coordinate conversion (macOS uses bottom-left origin)
         if let Some(monitor) = window.current_monitor().ok().flatten() {
@@ -92,14 +99,16 @@ pub fn position_near_cursor_macos(window: &WebviewWindow) {
 
 #[cfg(target_os = "macos")]
 fn show_without_focus_macos(window: &WebviewWindow) {
-    use cocoa::appkit::NSWindow;
-    use cocoa::base::{id, nil};
+    use objc2::msg_send;
+    use objc2::runtime::AnyObject;
 
     if let Ok(ns_window) = window.ns_window() {
         unsafe {
-            let ns_win = ns_window as id;
+            let ns_win = ns_window as *mut AnyObject;
             // orderFront: shows the window without making it key (no focus steal)
-            let _: () = objc::msg_send![ns_win, orderFront: nil];
+            // Pass nil (null_mut) as the sender parameter
+            let nil: *mut AnyObject = std::ptr::null_mut();
+            let _: () = msg_send![ns_win, orderFront: nil];
         }
     }
 }
