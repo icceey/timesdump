@@ -3,14 +3,11 @@
     windows_subsystem = "windows"
 )]
 
+use arboard::Clipboard;
+use log::info;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
-use log::info;
-use arboard::Clipboard;
-use timesdump_lib::{
-    ClipboardMonitor, TimestampConfig,
-    setup_ghost_window, create_tray_menu,
-};
+use timesdump_lib::{create_tray_menu, setup_ghost_window, ClipboardMonitor, TimestampConfig};
 
 /// Get the system locale
 #[tauri::command]
@@ -36,15 +33,18 @@ async fn save_settings(
     time_format: String,
 ) -> Result<(), String> {
     use tauri_plugin_store::StoreExt;
-    
+
     let store = app.store("settings.json").map_err(|e| e.to_string())?;
-    
+
     store.set("min_year", serde_json::json!(min_year));
     store.set("max_year", serde_json::json!(max_year));
-    store.set("display_duration_ms", serde_json::json!(display_duration_ms));
+    store.set(
+        "display_duration_ms",
+        serde_json::json!(display_duration_ms),
+    );
     store.set("time_format", serde_json::json!(time_format));
     store.save().map_err(|e| e.to_string())?;
-    
+
     Ok(())
 }
 
@@ -52,27 +52,31 @@ async fn save_settings(
 #[tauri::command]
 async fn load_settings(app: AppHandle) -> Result<TimestampConfig, String> {
     use tauri_plugin_store::StoreExt;
-    
+
     let store = app.store("settings.json").map_err(|e| e.to_string())?;
-    
-    let min_year = store.get("min_year")
+
+    let min_year = store
+        .get("min_year")
         .and_then(|v| v.as_i64())
         .map(|v| v as i32)
         .unwrap_or(1970);
-    
-    let max_year = store.get("max_year")
+
+    let max_year = store
+        .get("max_year")
         .and_then(|v| v.as_i64())
         .map(|v| v as i32)
         .unwrap_or(2100);
-    
-    let display_duration_ms = store.get("display_duration_ms")
+
+    let display_duration_ms = store
+        .get("display_duration_ms")
         .and_then(|v| v.as_u64())
         .unwrap_or(3000);
-    
-    let time_format = store.get("time_format")
+
+    let time_format = store
+        .get("time_format")
         .and_then(|v| v.as_str().map(String::from))
         .unwrap_or_else(|| "%Y-%m-%d %H:%M:%S".to_string());
-    
+
     Ok(TimestampConfig {
         min_year,
         max_year,
@@ -120,28 +124,28 @@ fn main() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .setup(|app| {
             info!("Setting up Timesdump application");
-            
+
             // Initialize clipboard monitor with default config
             let config = TimestampConfig::default();
             let monitor = Arc::new(ClipboardMonitor::new(config));
-            
+
             // Store monitor in app state
             app.manage(Arc::clone(&monitor));
-            
+
             // Start clipboard monitoring
             monitor.start(app.handle().clone());
             info!("Clipboard monitor started");
-            
+
             // Setup ghost window behavior for the HUD
             if let Some(hud_window) = app.get_webview_window("hud") {
                 setup_ghost_window(&hud_window);
                 info!("Ghost window configured");
             }
-            
+
             // Create system tray
             create_tray_menu(app.handle())?;
             info!("System tray created");
-            
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

@@ -1,11 +1,11 @@
+use arboard::Clipboard;
+use chrono::{Datelike, TimeZone, Utc};
+use log::{debug, error, info};
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 use tauri::{AppHandle, Emitter, Manager};
-use arboard::Clipboard;
-use chrono::{Datelike, TimeZone, Utc};
-use log::{debug, error, info};
 
 mod ghost_window;
 mod tray;
@@ -60,7 +60,7 @@ impl TimeParser {
     pub fn parse(&self, input: &str) -> Option<HudPayload> {
         // Step 1: Trim whitespace
         let trimmed = input.trim();
-        
+
         // Step 2: Check if string is non-empty and all digits
         if trimmed.is_empty() || !trimmed.chars().all(|c| c.is_ascii_digit()) {
             return None;
@@ -68,7 +68,7 @@ impl TimeParser {
 
         // Step 3: Parse as number
         let value: i64 = trimmed.parse().ok()?;
-        
+
         // Step 4: Determine if seconds or milliseconds based on length
         let (timestamp_seconds, is_milliseconds) = if trimmed.len() <= 10 {
             // Seconds
@@ -83,7 +83,10 @@ impl TimeParser {
         let year = datetime.year();
 
         if year < self.config.min_year || year > self.config.max_year {
-            debug!("Year {} out of range [{}, {}]", year, self.config.min_year, self.config.max_year);
+            debug!(
+                "Year {} out of range [{}, {}]",
+                year, self.config.min_year, self.config.max_year
+            );
             return None;
         }
 
@@ -179,20 +182,20 @@ impl ClipboardMonitor {
                 if let Ok(parser_guard) = parser.lock() {
                     if let Some(payload) = parser_guard.parse(&current) {
                         info!("Valid timestamp detected: {}", payload.formatted_time);
-                        
+
                         // Position and show the HUD window
                         if let Some(hud_window) = app_handle.get_webview_window("hud") {
                             // Get cursor position and position window near it
                             #[cfg(target_os = "macos")]
                             ghost_window::position_near_cursor_macos(&hud_window);
-                            
+
                             #[cfg(target_os = "windows")]
                             ghost_window::position_near_cursor_windows(&hud_window);
-                            
+
                             #[cfg(target_os = "linux")]
                             ghost_window::position_near_cursor_linux(&hud_window);
                         }
-                        
+
                         // Emit event to frontend
                         if let Err(e) = app_handle.emit("show_hud", payload) {
                             error!("Failed to emit show_hud event: {}", e);
@@ -212,7 +215,7 @@ mod tests {
     fn test_parse_seconds_timestamp() {
         let config = TimestampConfig::default();
         let parser = TimeParser::new(config);
-        
+
         // Unix epoch
         let result = parser.parse("0");
         assert!(result.is_some());
@@ -225,7 +228,7 @@ mod tests {
     fn test_parse_milliseconds_timestamp() {
         let config = TimestampConfig::default();
         let parser = TimeParser::new(config);
-        
+
         // 2024-01-01 00:00:00 in milliseconds
         let result = parser.parse("1704067200000");
         assert!(result.is_some());
@@ -238,7 +241,7 @@ mod tests {
     fn test_reject_non_numeric() {
         let config = TimestampConfig::default();
         let parser = TimeParser::new(config);
-        
+
         assert!(parser.parse("hello").is_none());
         assert!(parser.parse("123abc").is_none());
         assert!(parser.parse("12.34").is_none());
@@ -252,7 +255,7 @@ mod tests {
             ..Default::default()
         };
         let parser = TimeParser::new(config);
-        
+
         // 1990 is out of range
         assert!(parser.parse("631152000").is_none());
     }
@@ -261,7 +264,7 @@ mod tests {
     fn test_trim_whitespace() {
         let config = TimestampConfig::default();
         let parser = TimeParser::new(config);
-        
+
         let result = parser.parse("  1704067200  ");
         assert!(result.is_some());
     }
