@@ -64,6 +64,9 @@ jobs:
       - name: Install NPM dependencies
         run: npm install
 
+      - name: Build Frontend
+        run: npm run build
+
       # 只在 Linux 上运行 Lint 和测试
       - name: Frontend Lint (Type Check)
         if: matrix.os == 'ubuntu-latest'
