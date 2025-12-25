@@ -2,24 +2,53 @@ name: Build
 
 on:
   push:
-    branches: [main, copilot/**]
+    branches: [master, copilot/**]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 permissions:
   contents: read
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            job-name: Linux Test & Build
+            # Linux 需要特定的系统依赖安装命令
+          - os: macos-latest
+            job-name: macOS Build
+          - os: windows-latest
+            job-name: Windows Build
+
+    name: ${{ matrix.job-name }}
+    runs-on: ${{ matrix.os }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Linux 环境下安装 lint 组件
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          components: ${{ matrix.os == 'ubuntu-latest' && 'clippy, rustfmt' || '' }}
 
-      - name: Install system dependencies
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install system dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -32,52 +61,32 @@ jobs:
             librsvg2-dev \
             libssl-dev
 
+      - name: Install NPM dependencies
+        run: npm install
+
+      # 只在 Linux 上运行 Lint 和测试
+      - name: Frontend Lint (Type Check)
+        if: matrix.os == 'ubuntu-latest'
+        run: npx tsc --noEmit
+
+      - name: Backend Lint (Clippy & Fmt)
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: src-tauri
+        run: |
+          cargo fmt --all -- --check
+          cargo clippy --all-targets -- -D warnings
+
       - name: Run Rust tests
+        if: matrix.os == 'ubuntu-latest'
         working-directory: src-tauri
         run: cargo test --lib
 
-  build-macos:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install dependencies
-        run: npm install
-
+      # 在所有平台上构建应用（除了 Linux，这里假设 Linux 只做测试，或者您也想构建 Linux 包？）
+      # 如果 Linux 也要构建，只需移除 if 条件或调整逻辑
+      # 此处逻辑：如果是 Linux，执行 Lint 和 Test；如果是 macOS/Windows，执行 Build。
+      # 如果 Linux 也要 Build，可以在这里放开。
       - name: Build Tauri app
-        run: npm run tauri build
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ""
-
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build Tauri app
+        if: matrix.os != 'ubuntu-latest'
         run: npm run tauri build
         env:
           TAURI_SIGNING_PRIVATE_KEY: ""

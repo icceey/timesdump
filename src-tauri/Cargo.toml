@@ -4,7 +4,6 @@ version = "0.1.0"
 description = "The Silent Timestamp Decoder"
 authors = ["Timesdump Team"]
 edition = "2021"
-rust-version = "1.70"
 
 [lib]
 name = "timesdump_lib"
