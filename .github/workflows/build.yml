@@ -17,7 +17,7 @@ jobs:
         include:
           - os: ubuntu-latest
             job-name: Linux Test & Build
-            # Linux 需要特定的系统依赖安装命令
+            # Linux needs specific system dependency installation
           - os: macos-latest
             job-name: macOS Build
           - os: windows-latest
@@ -36,7 +36,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      # Linux 环境下安装 lint 组件
+      # Install lint components on Linux
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -67,7 +67,7 @@ jobs:
       - name: Build Frontend
         run: npm run build
 
-      # 只在 Linux 上运行 Lint 和测试
+      # Only run Lint and tests on Linux
       - name: Frontend Lint (Type Check)
         if: matrix.os == 'ubuntu-latest'
         run: npx tsc --noEmit
@@ -84,10 +84,7 @@ jobs:
         working-directory: src-tauri
         run: cargo test --lib
 
-      # 在所有平台上构建应用（除了 Linux，这里假设 Linux 只做测试，或者您也想构建 Linux 包？）
-      # 如果 Linux 也要构建，只需移除 if 条件或调整逻辑
-      # 此处逻辑：如果是 Linux，执行 Lint 和 Test；如果是 macOS/Windows，执行 Build。
-      # 如果 Linux 也要 Build，可以在这里放开。
+      # Build app on all non-Linux platforms
       - name: Build Tauri app
         if: matrix.os != 'ubuntu-latest'
         run: npm run tauri build

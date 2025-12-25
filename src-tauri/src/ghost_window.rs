@@ -21,7 +21,6 @@ pub fn setup_ghost_window(window: &WebviewWindow) {
 fn setup_ghost_window_macos(window: &WebviewWindow) {
     use cocoa::appkit::{NSWindow, NSWindowCollectionBehavior, NSWindowLevel};
     use cocoa::base::id;
-    use objc::runtime::YES;
 
     if let Ok(ns_window) = window.ns_window() {
         unsafe {

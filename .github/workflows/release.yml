@@ -3,6 +3,11 @@ name: Release
 on:
   workflow_dispatch:
     inputs:
+      branch:
+        description: 'Branch to build from'
+        required: true
+        type: string
+        default: 'master'
       version:
         description: 'Release version (e.g., v0.1.0)'
         required: true
@@ -26,7 +31,7 @@ jobs:
           - os: ubuntu-latest
             job-name: Linux
             target: x86_64-unknown-linux-gnu
-          - os: macos-latest
+          - os: macos-13
             job-name: macOS (Intel)
             target: x86_64-apple-darwin
           - os: macos-latest
@@ -41,6 +46,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
