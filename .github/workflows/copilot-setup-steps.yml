@@ -56,8 +56,8 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       # 安装前端依赖
-      - name: Install NPM dependencies
-        run: npm install
+      # - name: Install NPM dependencies
+      #   run: npm install
 
       # 预下载 Rust 依赖（只下载不编译，加速后续 Agent 的操作）
       - name: Fetch Rust dependencies
