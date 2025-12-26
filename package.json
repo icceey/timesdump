@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-autostart": "^2.0.0",
     "@tauri-apps/plugin-clipboard-manager": "^2.0.0",
     "@tauri-apps/plugin-positioner": "^2.0.0",
-    "@tauri-apps/plugin-autostart": "^2.0.0",
     "@tauri-apps/plugin-store": "^2.0.0",
     "i18next": "^25.7.3",
     "react": "^19.2.3",
@@ -21,6 +21,7 @@
     "react-i18next": "^16.5.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.18",
     "@tauri-apps/cli": "^2.0.0",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
