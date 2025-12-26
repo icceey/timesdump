@@ -27,7 +27,7 @@ Timesdump is a cross-platform desktop application that silently monitors your cl
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18 or later)
+- [Node.js](https://nodejs.org/) (v24 or later)
 - [Rust](https://www.rust-lang.org/tools/install) (latest stable)
 - Platform-specific dependencies:
   - **macOS**: Xcode Command Line Tools
