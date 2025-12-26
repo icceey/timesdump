@@ -2,6 +2,9 @@
 
 > The Silent Timestamp Decoder
 
+[![Build](https://github.com/icceey/timesdump/actions/workflows/build.yml/badge.svg)](https://github.com/icceey/timesdump/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Timesdump is a cross-platform desktop application that silently monitors your clipboard for Unix timestamps and displays them as human-readable dates without stealing focus from your current work.
 
 ## Features
@@ -93,3 +96,7 @@ timesdump/
 ## License
 
 MIT
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.

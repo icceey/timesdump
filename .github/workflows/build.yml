@@ -18,7 +18,7 @@ jobs:
           - os: ubuntu-latest
             job-name: Linux Test & Build
             # Linux needs specific system dependency installation
-          - os: macos-15
+          - os: macos-latest
             job-name: macOS Build
           - os: windows-latest
             job-name: Windows Build
