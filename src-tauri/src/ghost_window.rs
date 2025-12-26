@@ -69,8 +69,6 @@ fn setup_ghost_window_macos(window: &WebviewWindow) {
 #[cfg(target_os = "macos")]
 pub fn position_near_cursor_macos(window: &WebviewWindow) {
     use objc2::msg_send;
-    use objc2::runtime::AnyObject;
-    use objc2_app_kit::NSEvent;
     use objc2_foundation::NSPoint;
     use tauri::PhysicalPosition;
 
@@ -178,7 +176,7 @@ fn show_without_focus_windows(window: &WebviewWindow) {
             // Show window without activating using SWP_NOACTIVATE
             let _ = SetWindowPos(
                 hwnd,
-                HWND_TOPMOST,
+                Some(HWND_TOPMOST),
                 0,
                 0,
                 0,
