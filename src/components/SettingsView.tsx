@@ -8,6 +8,7 @@ interface Settings {
   max_year: number;
   display_duration_ms: number;
   time_format: string;
+  hud_position: string;
 }
 
 const TIME_FORMATS = [
@@ -19,6 +20,15 @@ const TIME_FORMATS = [
   { value: "%H:%M:%S", label: "HH:mm:ss" },
 ];
 
+const HUD_POSITIONS = [
+  { value: "top_center", labelKey: "settings.hudPositionTopCenter" },
+  { value: "top_left", labelKey: "settings.hudPositionTopLeft" },
+  { value: "top_right", labelKey: "settings.hudPositionTopRight" },
+  { value: "bottom_center", labelKey: "settings.hudPositionBottomCenter" },
+  { value: "bottom_left", labelKey: "settings.hudPositionBottomLeft" },
+  { value: "bottom_right", labelKey: "settings.hudPositionBottomRight" },
+];
+
 export default function SettingsView() {
   const { t } = useTranslation();
   const [settings, setSettings] = useState<Settings>({
@@ -26,6 +36,7 @@ export default function SettingsView() {
     max_year: 2100,
     display_duration_ms: 3000,
     time_format: "%Y-%m-%d %H:%M:%S",
+    hud_position: "top_center",
   });
   const [autostart, setAutostart] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -60,6 +71,7 @@ export default function SettingsView() {
         max_year: settings.max_year,
         display_duration_ms: settings.display_duration_ms,
         time_format: settings.time_format,
+        hud_position: settings.hud_position,
       });
     } catch (error) {
       console.error("Failed to save settings:", error);
@@ -161,6 +173,32 @@ export default function SettingsView() {
             {TIME_FORMATS.map((format) => (
               <option key={format.value} value={format.value}>
                 {format.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* HUD Position */}
+        <div className="py-3 border-b border-border">
+          <label className="text-sm font-medium text-foreground">
+            {t("settings.hudPosition")}
+          </label>
+          <p className="text-xs text-muted-foreground mt-0.5 mb-2">
+            {t("settings.hudPositionDesc")}
+          </p>
+          <select
+            value={settings.hud_position}
+            onChange={(e) => handleChange("hud_position", e.target.value)}
+            className="
+              mt-2 w-full px-3 py-2 rounded-md
+              bg-muted text-foreground
+              border border-border
+              focus:outline-none focus:ring-2 focus:ring-blue-500
+            "
+          >
+            {HUD_POSITIONS.map((pos) => (
+              <option key={pos.value} value={pos.value}>
+                {t(pos.labelKey)}
               </option>
             ))}
           </select>

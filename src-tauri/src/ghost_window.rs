@@ -1,9 +1,69 @@
 use log::debug;
-use tauri::WebviewWindow;
+use tauri::{PhysicalPosition, WebviewWindow};
 
-/// Offset in pixels from cursor position to window position
-#[cfg(any(target_os = "macos", target_os = "windows"))]
-const CURSOR_OFFSET: i32 = 20;
+use crate::HudPosition;
+
+/// Padding from screen edges in pixels
+const SCREEN_EDGE_PADDING: i32 = 20;
+
+/// Calculate the window position based on HudPosition and screen/window dimensions
+fn calculate_hud_position(
+    position: HudPosition,
+    screen_width: i32,
+    screen_height: i32,
+    win_width: i32,
+    win_height: i32,
+    padding: i32,
+) -> (i32, i32) {
+    match position {
+        HudPosition::TopLeft => (padding, padding),
+        HudPosition::TopRight => (screen_width - win_width - padding, padding),
+        HudPosition::BottomLeft => (padding, screen_height - win_height - padding),
+        HudPosition::BottomRight => (
+            screen_width - win_width - padding,
+            screen_height - win_height - padding,
+        ),
+        HudPosition::TopCenter => ((screen_width - win_width) / 2, padding),
+        HudPosition::BottomCenter => (
+            (screen_width - win_width) / 2,
+            screen_height - win_height - padding,
+        ),
+    }
+}
+
+/// Set the HUD window position based on the configured position
+fn set_hud_window_position(window: &WebviewWindow, position: HudPosition) {
+    if let Some(monitor) = window.current_monitor().ok().flatten() {
+        let screen_size = monitor.size();
+        let scale_factor = monitor.scale_factor();
+
+        // Get window size (use outer_size for total window dimensions)
+        let window_size = window
+            .outer_size()
+            .unwrap_or(tauri::PhysicalSize::new(380, 120));
+
+        let screen_width = screen_size.width as i32;
+        let screen_height = screen_size.height as i32;
+        let win_width = window_size.width as i32;
+        let win_height = window_size.height as i32;
+        let padding = (SCREEN_EDGE_PADDING as f64 * scale_factor) as i32;
+
+        let (x, y) = calculate_hud_position(
+            position,
+            screen_width,
+            screen_height,
+            win_width,
+            win_height,
+            padding,
+        );
+
+        let _ = window.set_position(PhysicalPosition::new(x, y));
+        debug!(
+            "Positioned HUD window at ({}, {}) for position {:?}",
+            x, y, position
+        );
+    }
+}
 
 /// Setup the ghost window with platform-specific non-activating behavior
 pub fn setup_ghost_window(window: &WebviewWindow) {
@@ -67,31 +127,8 @@ fn setup_ghost_window_macos(window: &WebviewWindow) {
 }
 
 #[cfg(target_os = "macos")]
-pub fn position_near_cursor_macos(window: &WebviewWindow) {
-    use objc2::msg_send;
-    use objc2_foundation::NSPoint;
-    use tauri::PhysicalPosition;
-
-    unsafe {
-        // Get mouse location using class method on NSEvent
-        let mouse_location: NSPoint = msg_send![objc2::class!(NSEvent), mouseLocation];
-
-        // Get screen height for coordinate conversion (macOS uses bottom-left origin)
-        if let Some(monitor) = window.current_monitor().ok().flatten() {
-            let screen_height = monitor.size().height as f64;
-            let scale_factor = monitor.scale_factor();
-
-            // Convert from macOS coordinates (bottom-left) to screen coordinates (top-left)
-            let x = (mouse_location.x * scale_factor) as i32 + CURSOR_OFFSET;
-            let y = ((screen_height / scale_factor - mouse_location.y) * scale_factor) as i32
-                + CURSOR_OFFSET;
-
-            let _ = window.set_position(PhysicalPosition::new(x, y));
-            debug!("Positioned window at ({}, {})", x, y);
-        }
-    }
-
-    // Show window without activating
+pub fn position_hud_macos(window: &WebviewWindow, position: HudPosition) {
+    set_hud_window_position(window, position);
     show_without_focus_macos(window);
 }
 
@@ -142,24 +179,8 @@ fn setup_ghost_window_windows(window: &WebviewWindow) {
 }
 
 #[cfg(target_os = "windows")]
-pub fn position_near_cursor_windows(window: &WebviewWindow) {
-    use tauri::PhysicalPosition;
-    use windows::Win32::Foundation::POINT;
-    use windows::Win32::UI::WindowsAndMessaging::GetCursorPos;
-
-    unsafe {
-        let mut point = POINT::default();
-        if GetCursorPos(&mut point).is_ok() {
-            // Position window slightly offset from cursor
-            let x = point.x + CURSOR_OFFSET;
-            let y = point.y + CURSOR_OFFSET;
-
-            let _ = window.set_position(PhysicalPosition::new(x, y));
-            debug!("Positioned window at ({}, {})", x, y);
-        }
-    }
-
-    // Show window without activating
+pub fn position_hud_windows(window: &WebviewWindow, position: HudPosition) {
+    set_hud_window_position(window, position);
     show_without_focus_windows(window);
 }
 
@@ -196,12 +217,7 @@ fn setup_ghost_window_linux(window: &WebviewWindow) {
 }
 
 #[cfg(target_os = "linux")]
-pub fn position_near_cursor_linux(window: &WebviewWindow) {
-    use tauri::PhysicalPosition;
-
-    // On Linux, we'll use a fixed position or try to get cursor position via GTK
-    // For simplicity, show at a default position
-    let _ = window.set_position(PhysicalPosition::new(100, 100));
+pub fn position_hud_linux(window: &WebviewWindow, position: HudPosition) {
+    set_hud_window_position(window, position);
     let _ = window.show();
-    debug!("Linux: positioned window at default location");
 }
