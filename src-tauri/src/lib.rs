@@ -135,9 +135,14 @@ pub struct ClipboardMonitor {
 
 impl ClipboardMonitor {
     pub fn new(config: TimestampConfig) -> Self {
+        // Read current clipboard content to avoid triggering on startup
+        let initial_content = Clipboard::new()
+            .and_then(|mut c| c.get_text())
+            .unwrap_or_default();
+
         Self {
             parser: Arc::new(Mutex::new(TimeParser::new(config))),
-            last_content: Arc::new(Mutex::new(String::new())),
+            last_content: Arc::new(Mutex::new(initial_content)),
             running: Arc::new(Mutex::new(true)),
         }
     }
