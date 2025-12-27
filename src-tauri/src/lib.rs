@@ -183,23 +183,30 @@ impl ClipboardMonitor {
                     if let Some(payload) = parser_guard.parse(&current) {
                         info!("Valid timestamp detected: {}", payload.formatted_time);
 
-                        // Position and show the HUD window
-                        if let Some(hud_window) = app_handle.get_webview_window("hud") {
-                            // Get cursor position and position window near it
-                            #[cfg(target_os = "macos")]
-                            ghost_window::position_near_cursor_macos(&hud_window);
+                        // Clone payload for the closure
+                        let payload_clone = payload.clone();
+                        let app_handle_clone = app_handle.clone();
 
-                            #[cfg(target_os = "windows")]
-                            ghost_window::position_near_cursor_windows(&hud_window);
+                        // Position and show the HUD window on the main thread
+                        // macOS requires all UI operations to run on the main thread
+                        let _ = app_handle.run_on_main_thread(move || {
+                            if let Some(hud_window) = app_handle_clone.get_webview_window("hud") {
+                                // Get cursor position and position window near it
+                                #[cfg(target_os = "macos")]
+                                ghost_window::position_near_cursor_macos(&hud_window);
 
-                            #[cfg(target_os = "linux")]
-                            ghost_window::position_near_cursor_linux(&hud_window);
-                        }
+                                #[cfg(target_os = "windows")]
+                                ghost_window::position_near_cursor_windows(&hud_window);
 
-                        // Emit event to frontend
-                        if let Err(e) = app_handle.emit("show_hud", payload) {
-                            error!("Failed to emit show_hud event: {}", e);
-                        }
+                                #[cfg(target_os = "linux")]
+                                ghost_window::position_near_cursor_linux(&hud_window);
+                            }
+
+                            // Emit event to frontend
+                            if let Err(e) = app_handle_clone.emit("show_hud", payload_clone) {
+                                error!("Failed to emit show_hud event: {}", e);
+                            }
+                        });
                     }
                 }
             }
