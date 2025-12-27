@@ -11,7 +11,7 @@ mod ghost_window;
 mod tray;
 
 pub use ghost_window::setup_ghost_window;
-pub use tray::create_tray_menu;
+pub use tray::setup_tray_menu;
 
 /// HUD popup position on screen
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
@@ -40,9 +40,9 @@ pub struct TimestampConfig {
 impl Default for TimestampConfig {
     fn default() -> Self {
         Self {
-            min_year: 1970,
-            max_year: 2100,
-            display_duration_ms: 3000,
+            min_year: 1990,
+            max_year: 2050,
+            display_duration_ms: 5000,
             time_format: "%Y-%m-%d %H:%M:%S".to_string(),
             hud_position: HudPosition::default(),
         }
@@ -250,11 +250,11 @@ mod tests {
         let config = TimestampConfig::default();
         let parser = TimeParser::new(config);
 
-        // Unix epoch
-        let result = parser.parse("0");
+        // 2024-01-01 00:00:00 in seconds
+        let result = parser.parse("1704067200");
         assert!(result.is_some());
         let payload = result.unwrap();
-        assert_eq!(payload.timestamp_seconds, 0);
+        assert_eq!(payload.timestamp_seconds, 1704067200);
         assert!(!payload.is_milliseconds);
     }
 

@@ -32,9 +32,9 @@ const HUD_POSITIONS = [
 export default function SettingsView() {
   const { t } = useTranslation();
   const [settings, setSettings] = useState<Settings>({
-    min_year: 1970,
-    max_year: 2100,
-    display_duration_ms: 3000,
+    min_year: 1990,
+    max_year: 2050,
+    display_duration_ms: 5000,
     time_format: "%Y-%m-%d %H:%M:%S",
     hud_position: "top_center",
   });
@@ -99,51 +99,83 @@ export default function SettingsView() {
   };
 
   return (
-    <div className="h-full bg-background p-6 overflow-auto">
-      <h1 className="text-2xl font-semibold text-foreground mb-6">
+    <div style={{ 
+      minHeight: '100%',
+      padding: 20,
+      background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)'
+    }}>
+      {/* Title */}
+      <h1 style={{
+        fontSize: 18,
+        fontWeight: 600,
+        color: '#1e293b',
+        marginBottom: 16
+      }}>
         {t("settings.title")}
       </h1>
 
-      {/* General Section */}
-      <section className="mb-8">
-        <h2 className="text-lg font-medium text-foreground mb-4">
-          {t("settings.general")}
-        </h2>
-
+      {/* Main Settings Card */}
+      <div style={{ 
+        background: 'white',
+        borderRadius: 12,
+        overflow: 'hidden',
+        marginBottom: 16,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)'
+      }}>
         {/* Autostart */}
-        <div className="flex items-center justify-between py-3 border-b border-border">
-          <div>
-            <label className="text-sm font-medium text-foreground">
-              {t("settings.launchAtLogin")}
-            </label>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {t("settings.launchAtLoginDesc")}
-            </p>
-          </div>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '14px 16px',
+          borderBottom: '1px solid #f1f5f9'
+        }}>
+          <span style={{ fontSize: 14, color: '#334155' }}>{t("settings.launchAtLogin")}</span>
           <button
             onClick={toggleAutostart}
-            className={`
-              relative w-11 h-6 rounded-full transition-colors
-              ${autostart ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"}
-            `}
+            style={{
+              width: 44,
+              height: 26,
+              borderRadius: 13,
+              border: 'none',
+              background: autostart ? '#22c55e' : '#e2e8f0',
+              position: 'relative',
+              cursor: 'pointer',
+              transition: 'background 0.2s'
+            }}
           >
             <span
-              className={`
-                absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform
-                ${autostart ? "translate-x-5" : "translate-x-0"}
-              `}
+              style={{
+                position: 'absolute',
+                top: 2,
+                left: autostart ? 20 : 2,
+                width: 22,
+                height: 22,
+                borderRadius: 11,
+                background: 'white',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                transition: 'left 0.2s'
+              }}
             />
           </button>
         </div>
 
         {/* Display Duration */}
-        <div className="py-3 border-b border-border">
-          <label className="text-sm font-medium text-foreground">
-            {t("settings.displayDuration")}
-          </label>
-          <p className="text-xs text-muted-foreground mt-0.5 mb-2">
-            {(settings.display_duration_ms / 1000).toFixed(1)}s
-          </p>
+        <div style={{
+          padding: '14px 16px',
+          borderBottom: '1px solid #f1f5f9'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 10
+          }}>
+            <span style={{ fontSize: 14, color: '#334155' }}>{t("settings.displayDuration")}</span>
+            <span style={{ fontSize: 14, fontWeight: 500, color: '#3b82f6' }}>
+              {(settings.display_duration_ms / 1000).toFixed(1)}s
+            </span>
+          </div>
           <input
             type="range"
             min="1500"
@@ -151,24 +183,39 @@ export default function SettingsView() {
             step="500"
             value={settings.display_duration_ms}
             onChange={(e) => handleChange("display_duration_ms", parseInt(e.target.value))}
-            className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
+            style={{
+              width: '100%',
+              height: 4,
+              borderRadius: 2,
+              appearance: 'none',
+              background: '#e2e8f0',
+              cursor: 'pointer',
+              accentColor: '#3b82f6'
+            }}
           />
         </div>
 
         {/* Time Format */}
-        <div className="py-3 border-b border-border">
-          <label className="text-sm font-medium text-foreground">
-            {t("settings.timeFormat")}
-          </label>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '14px 16px',
+          borderBottom: '1px solid #f1f5f9'
+        }}>
+          <span style={{ fontSize: 14, color: '#334155' }}>{t("settings.timeFormat")}</span>
           <select
             value={settings.time_format}
             onChange={(e) => handleChange("time_format", e.target.value)}
-            className="
-              mt-2 w-full px-3 py-2 rounded-md
-              bg-muted text-foreground
-              border border-border
-              focus:outline-none focus:ring-2 focus:ring-blue-500
-            "
+            style={{
+              fontSize: 14,
+              color: '#64748b',
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              textAlign: 'right',
+              cursor: 'pointer'
+            }}
           >
             {TIME_FORMATS.map((format) => (
               <option key={format.value} value={format.value}>
@@ -179,22 +226,26 @@ export default function SettingsView() {
         </div>
 
         {/* HUD Position */}
-        <div className="py-3 border-b border-border">
-          <label className="text-sm font-medium text-foreground">
-            {t("settings.hudPosition")}
-          </label>
-          <p className="text-xs text-muted-foreground mt-0.5 mb-2">
-            {t("settings.hudPositionDesc")}
-          </p>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '14px 16px',
+          borderBottom: '1px solid #f1f5f9'
+        }}>
+          <span style={{ fontSize: 14, color: '#334155' }}>{t("settings.hudPosition")}</span>
           <select
             value={settings.hud_position}
             onChange={(e) => handleChange("hud_position", e.target.value)}
-            className="
-              mt-2 w-full px-3 py-2 rounded-md
-              bg-muted text-foreground
-              border border-border
-              focus:outline-none focus:ring-2 focus:ring-blue-500
-            "
+            style={{
+              fontSize: 14,
+              color: '#64748b',
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              textAlign: 'right',
+              cursor: 'pointer'
+            }}
           >
             {HUD_POSITIONS.map((pos) => (
               <option key={pos.value} value={pos.value}>
@@ -203,74 +254,91 @@ export default function SettingsView() {
             ))}
           </select>
         </div>
-      </section>
 
-      {/* Filter Section */}
-      <section className="mb-8">
-        <h2 className="text-lg font-medium text-foreground mb-4">
-          {t("settings.filter")}
-        </h2>
-
-        {/* Year Range */}
-        <div className="py-3">
-          <label className="text-sm font-medium text-foreground">
-            {t("settings.yearRange")}
-          </label>
-          <p className="text-xs text-muted-foreground mt-0.5 mb-2">
-            {t("settings.yearRangeDesc")}
-          </p>
-          <div className="flex items-center gap-3">
+        {/* Year Range - inline */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '14px 16px'
+        }}>
+          <span style={{ fontSize: 14, color: '#334155' }}>{t("settings.yearRange")}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <input
               type="number"
               min="1900"
               max="2200"
               value={settings.min_year}
               onChange={(e) => handleChange("min_year", parseInt(e.target.value))}
-              className="
-                w-24 px-3 py-2 rounded-md
-                bg-muted text-foreground
-                border border-border
-                focus:outline-none focus:ring-2 focus:ring-blue-500
-              "
+              style={{
+                width: 70,
+                padding: '6px 8px',
+                borderRadius: 6,
+                border: '1px solid #e2e8f0',
+                background: '#f8fafc',
+                fontSize: 13,
+                fontWeight: 500,
+                textAlign: 'center',
+                outline: 'none',
+                color: '#334155'
+              }}
             />
-            <span className="text-muted-foreground">—</span>
+            <span style={{ color: '#94a3b8', fontSize: 12 }}>—</span>
             <input
               type="number"
               min="1900"
               max="2200"
               value={settings.max_year}
               onChange={(e) => handleChange("max_year", parseInt(e.target.value))}
-              className="
-                w-24 px-3 py-2 rounded-md
-                bg-muted text-foreground
-                border border-border
-                focus:outline-none focus:ring-2 focus:ring-blue-500
-              "
+              style={{
+                width: 70,
+                padding: '6px 8px',
+                borderRadius: 6,
+                border: '1px solid #e2e8f0',
+                background: '#f8fafc',
+                fontSize: 13,
+                fontWeight: 500,
+                textAlign: 'center',
+                outline: 'none',
+                color: '#334155'
+              }}
             />
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Save Button */}
       <button
         onClick={saveSettings}
         disabled={saving}
-        className="
-          w-full py-3 rounded-lg
-          bg-blue-500 hover:bg-blue-600
-          text-white font-medium
-          transition-colors
-          disabled:opacity-50 disabled:cursor-not-allowed
-        "
+        style={{
+          width: '100%',
+          padding: '12px 0',
+          borderRadius: 10,
+          border: 'none',
+          background: '#3b82f6',
+          color: 'white',
+          fontSize: 14,
+          fontWeight: 600,
+          cursor: saving ? 'not-allowed' : 'pointer',
+          opacity: saving ? 0.6 : 1,
+          transition: 'background 0.2s'
+        }}
+        onMouseOver={(e) => !saving && (e.currentTarget.style.background = '#2563eb')}
+        onMouseOut={(e) => !saving && (e.currentTarget.style.background = '#3b82f6')}
       >
         {saving ? t("settings.saving") : t("settings.save")}
       </button>
 
-      {/* App Info */}
-      <div className="mt-8 text-center text-xs text-muted-foreground">
-        <p>Timesdump v0.1.0</p>
-        <p className="mt-1">{t("settings.tagline")}</p>
-      </div>
+      {/* Footer */}
+      <p style={{
+        textAlign: 'center',
+        fontSize: 12,
+        color: '#94a3b8',
+        marginTop: 16
+      }}>
+        Timesdump v0.1.0 · {t("settings.tagline")}
+      </p>
     </div>
   );
 }
