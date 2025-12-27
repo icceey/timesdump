@@ -8,7 +8,7 @@ use log::info;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
 use timesdump_lib::{
-    create_tray_menu, setup_ghost_window, ClipboardMonitor, HudPosition, TimestampConfig,
+    setup_ghost_window, setup_tray_menu, ClipboardMonitor, HudPosition, TimestampConfig,
 };
 
 /// Get the system locale
@@ -63,18 +63,18 @@ async fn load_settings(app: AppHandle) -> Result<TimestampConfig, String> {
         .get("min_year")
         .and_then(|v| v.as_i64())
         .map(|v| v as i32)
-        .unwrap_or(1970);
+        .unwrap_or(1990);
 
     let max_year = store
         .get("max_year")
         .and_then(|v| v.as_i64())
         .map(|v| v as i32)
-        .unwrap_or(2100);
+        .unwrap_or(2050);
 
     let display_duration_ms = store
         .get("display_duration_ms")
         .and_then(|v| v.as_u64())
-        .unwrap_or(3000);
+        .unwrap_or(5000);
 
     let time_format = store
         .get("time_format")
@@ -134,7 +134,7 @@ fn main() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .setup(|app| {
             let handle = app.handle().clone();
-            
+
             // Setup signal handler for graceful shutdown
             ctrlc::set_handler(move || {
                 info!("Received termination signal, exiting gracefully...");
@@ -161,7 +161,7 @@ fn main() {
             }
 
             // Create system tray
-            create_tray_menu(app.handle())?;
+            setup_tray_menu(app.handle())?;
             info!("System tray created");
 
             Ok(())
