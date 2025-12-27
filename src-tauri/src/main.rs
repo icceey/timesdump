@@ -7,7 +7,9 @@ use arboard::Clipboard;
 use log::info;
 use std::sync::Arc;
 use tauri::{AppHandle, Manager};
-use timesdump_lib::{create_tray_menu, setup_ghost_window, ClipboardMonitor, TimestampConfig};
+use timesdump_lib::{
+    create_tray_menu, setup_ghost_window, ClipboardMonitor, HudPosition, TimestampConfig,
+};
 
 /// Get the system locale
 #[tauri::command]
@@ -31,6 +33,7 @@ async fn save_settings(
     max_year: i32,
     display_duration_ms: u64,
     time_format: String,
+    hud_position: HudPosition,
 ) -> Result<(), String> {
     use tauri_plugin_store::StoreExt;
 
@@ -43,6 +46,7 @@ async fn save_settings(
         serde_json::json!(display_duration_ms),
     );
     store.set("time_format", serde_json::json!(time_format));
+    store.set("hud_position", serde_json::json!(hud_position));
     store.save().map_err(|e| e.to_string())?;
 
     Ok(())
@@ -77,11 +81,17 @@ async fn load_settings(app: AppHandle) -> Result<TimestampConfig, String> {
         .and_then(|v| v.as_str().map(String::from))
         .unwrap_or_else(|| "%Y-%m-%d %H:%M:%S".to_string());
 
+    let hud_position = store
+        .get("hud_position")
+        .and_then(|v| serde_json::from_value(v.clone()).ok())
+        .unwrap_or_default();
+
     Ok(TimestampConfig {
         min_year,
         max_year,
         display_duration_ms,
         time_format,
+        hud_position,
     })
 }
 

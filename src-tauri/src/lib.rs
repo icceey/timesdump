@@ -13,6 +13,19 @@ mod tray;
 pub use ghost_window::setup_ghost_window;
 pub use tray::create_tray_menu;
 
+/// HUD popup position on screen
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum HudPosition {
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight,
+    #[default]
+    TopCenter,
+    BottomCenter,
+}
+
 /// Configuration for timestamp parsing
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TimestampConfig {
@@ -20,6 +33,8 @@ pub struct TimestampConfig {
     pub max_year: i32,
     pub display_duration_ms: u64,
     pub time_format: String,
+    #[serde(default)]
+    pub hud_position: HudPosition,
 }
 
 impl Default for TimestampConfig {
@@ -29,6 +44,7 @@ impl Default for TimestampConfig {
             max_year: 2100,
             display_duration_ms: 3000,
             time_format: "%Y-%m-%d %H:%M:%S".to_string(),
+            hud_position: HudPosition::default(),
         }
     }
 }
@@ -54,6 +70,11 @@ impl TimeParser {
 
     pub fn update_config(&mut self, config: TimestampConfig) {
         self.config = config;
+    }
+
+    /// Get the configured HUD position
+    pub fn get_hud_position(&self) -> HudPosition {
+        self.config.hud_position
     }
 
     /// Parse a clipboard string and return HudPayload if valid
@@ -183,23 +204,24 @@ impl ClipboardMonitor {
                     if let Some(payload) = parser_guard.parse(&current) {
                         info!("Valid timestamp detected: {}", payload.formatted_time);
 
-                        // Clone payload for the closure
+                        // Clone payload and get position for the closure
                         let payload_clone = payload.clone();
+                        let hud_position = parser_guard.get_hud_position();
                         let app_handle_clone = app_handle.clone();
 
                         // Position and show the HUD window on the main thread
                         // macOS requires all UI operations to run on the main thread
                         let _ = app_handle.run_on_main_thread(move || {
                             if let Some(hud_window) = app_handle_clone.get_webview_window("hud") {
-                                // Get cursor position and position window near it
+                                // Position window at the configured fixed position
                                 #[cfg(target_os = "macos")]
-                                ghost_window::position_near_cursor_macos(&hud_window);
+                                ghost_window::position_hud_macos(&hud_window, hud_position);
 
                                 #[cfg(target_os = "windows")]
-                                ghost_window::position_near_cursor_windows(&hud_window);
+                                ghost_window::position_hud_windows(&hud_window, hud_position);
 
                                 #[cfg(target_os = "linux")]
-                                ghost_window::position_near_cursor_linux(&hud_window);
+                                ghost_window::position_hud_linux(&hud_window, hud_position);
                             }
 
                             // Emit event to frontend
