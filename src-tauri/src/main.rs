@@ -133,6 +133,14 @@ fn main() {
         ))
         .plugin(tauri_plugin_store::Builder::new().build())
         .setup(|app| {
+            let handle = app.handle().clone();
+            
+            // Setup signal handler for graceful shutdown
+            ctrlc::set_handler(move || {
+                info!("Received termination signal, exiting gracefully...");
+                handle.exit(0);
+            })
+            .expect("Error setting signal handler");
             info!("Setting up Timesdump application");
 
             // Initialize clipboard monitor with default config
@@ -158,6 +166,16 @@ fn main() {
 
             Ok(())
         })
+        .on_window_event(|window, event| {
+            // Handle window close events properly
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                // Hide window instead of closing for settings window
+                if window.label() == "settings" {
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             get_system_locale,
             copy_result,
@@ -167,6 +185,16 @@ fn main() {
             save_settings,
             load_settings,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|_app_handle, event| {
+            if let tauri::RunEvent::ExitRequested { code, .. } = &event {
+                info!("Exit requested with code: {:?}", code);
+                // Allow the exit to proceed - tray will be cleaned up automatically
+            }
+            if let tauri::RunEvent::Exit = event {
+                info!("Application exiting, cleaning up...");
+                // Tauri will clean up the tray icon automatically on proper exit
+            }
+        });
 }

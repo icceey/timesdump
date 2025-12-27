@@ -10,8 +10,10 @@ function App() {
     const hash = window.location.hash;
     if (hash.includes("settings")) {
       setView("settings");
+      document.body.classList.remove("hud-mode");
     } else {
       setView("hud");
+      document.body.classList.add("hud-mode");
     }
   }, []);
 

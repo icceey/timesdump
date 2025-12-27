@@ -94,45 +94,42 @@ export default function HudView() {
 
   return (
     <div
-      className="hud-container h-full flex items-center justify-center p-4"
+      className="hud-container h-full flex items-center justify-center"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={handleClick}
     >
       <div
-        onClick={handleClick}
         className="
           no-select cursor-pointer
-          bg-white/80 dark:bg-gray-900/80
-          backdrop-blur-xl
-          rounded-lg
-          border border-white/20 dark:border-gray-700/50
-          shadow-lg shadow-black/5 dark:shadow-black/20
-          px-6 py-4
-          min-w-[320px]
-          transition-all
-          hover:scale-[1.02]
-          active:scale-[0.98]
+          w-full h-full
+          flex flex-col items-center justify-center
+          px-5 py-3
+          transition-opacity
+          hover:opacity-90
+          active:opacity-75
         "
       >
         {/* Main time display */}
-        <div className="text-2xl font-mono font-semibold text-gray-900 dark:text-gray-100 text-center">
+        <div className="text-[22px] font-medium tracking-tight text-black/85 dark:text-white/90 text-center font-mono">
           {payload.formatted_time}
         </div>
         
-        {/* Metadata */}
-        <div className="mt-2 flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
-          <span>
+        {/* Metadata row */}
+        <div className="mt-1.5 flex items-center gap-3 text-[11px] text-black/45 dark:text-white/50">
+          <span className="uppercase tracking-wide">
             {payload.is_milliseconds ? t("hud.milliseconds") : t("hud.seconds")}
           </span>
-          <span className="font-mono opacity-60">
-            {payload.raw_value.length > 16 
-              ? payload.raw_value.slice(0, 16) + "..." 
+          <span className="text-black/25 dark:text-white/25">•</span>
+          <span className="font-mono">
+            {payload.raw_value.length > 13 
+              ? payload.raw_value.slice(0, 13) 
               : payload.raw_value}
           </span>
         </div>
         
         {/* Click hint */}
-        <div className="mt-3 text-xs text-center text-gray-400 dark:text-gray-500">
+        <div className="mt-2 text-[10px] text-black/35 dark:text-white/40 tracking-wide">
           {t("hud.clickToCopy")}
         </div>
       </div>

@@ -115,12 +115,12 @@ fn setup_ghost_window_macos(window: &WebviewWindow) {
         }
     }
 
-    // Apply vibrancy effect
+    // Apply vibrancy effect with Popover material for cleaner look
     if let Err(e) = window_vibrancy::apply_vibrancy(
         window,
-        window_vibrancy::NSVisualEffectMaterial::HudWindow,
+        window_vibrancy::NSVisualEffectMaterial::Popover,
         None,
-        None,
+        Some(12.0), // Corner radius matching macOS style
     ) {
         log::warn!("Failed to apply vibrancy: {:?}", e);
     }

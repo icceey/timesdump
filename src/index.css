@@ -30,7 +30,9 @@ html,
 body,
 #root {
   height: 100%;
-  font-family: "SF Pro", "Segoe UI Variable", system-ui, -apple-system, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", "Segoe UI Variable", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -38,7 +40,12 @@ body {
   background: hsl(var(--background));
 }
 
-/* For transparent HUD window */
+/* HUD window - fully transparent to show vibrancy */
+body.hud-mode,
+body.hud-mode #root {
+  background: transparent !important;
+}
+
 .hud-container {
   background: transparent;
 }
