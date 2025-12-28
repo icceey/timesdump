@@ -4,7 +4,7 @@
 
 ## Critical Rules
 
-1. **Always validate changes** - Run relevant commands (`cargo fmt`, `cargo clippy`, `cargo test`, `npx tsc --noEmit`) after ANY code change to ensure CI will pass.
+1. **Always run CI check before committing** - After ANY code change, run `npm run check` to validate all CI checks pass. Use `npm run check:fix` to auto-fix Rust formatting issues first. **NEVER commit code that fails CI checks.**
 2. **Consult documentation when uncertain** - Check local docs, [docs.rs](https://docs.rs), [Tauri v2 docs](https://v2.tauri.app/reference/config/), or relevant API references before implementing unfamiliar features.
 3. **Update README if needed** - When adding features, changing commands, or modifying dependencies, check if `README.md` needs corresponding updates.
 
@@ -26,39 +26,33 @@
 
 ## Build & Validation Commands
 
-**ALWAYS run these in order after you finish or before committing. CI runs all checks on Linux.**
+**ALWAYS run CI check after finishing changes or before committing. CI runs all checks on Linux.**
 
-### 1. Install Dependencies (run first, always)
+### Quick CI Validation (REQUIRED before committing)
 ```bash
-npm install
+npm run check        # Run all CI checks (TypeScript, Rust format, Clippy, tests)
+npm run check:fix    # Auto-fix Rust formatting first, then run all checks
 ```
 
-### 2. Frontend Validation
+### Individual Commands (for reference)
 ```bash
-npx tsc --noEmit                    # TypeScript type check (required)
+npm install                         # Install dependencies (run first)
+npx tsc --noEmit                    # TypeScript type check
+cd src-tauri && cargo fmt --all -- --check   # Rust format check
+cd src-tauri && cargo clippy --all-targets -- -D warnings  # Clippy lint
+cd src-tauri && cargo test --lib    # Unit tests
 ```
 
-### 3. Backend Validation (from src-tauri directory)
-```bash
-cd src-tauri
-cargo fmt --all -- --check          # Format check (required, CI enforced)
-cargo clippy --all-targets -- -D warnings  # Lint - NO warnings allowed
-cargo test --lib                    # Unit tests for TimeParser
-```
-
-### 4. Full Build (optional for validation)
-```bash
-npm run tauri build                 # Production build
-```
-
-### Development Mode
+### Development & Build
 ```bash
 npm run tauri dev                   # Hot reload dev server on port 1420
+npm run tauri build                 # Production build
 ```
 
 ### Fixing Format Issues
 ```bash
 cd src-tauri && cargo fmt --all     # Auto-fix Rust formatting
+# Or use: npm run check:fix         # Fix and validate in one command
 ```
 
 ---

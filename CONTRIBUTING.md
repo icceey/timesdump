@@ -76,15 +76,24 @@ timesdump/
   cargo clippy --all-targets -- -D warnings
   ```
 
-### Running Tests
+### Running CI Checks (REQUIRED before committing)
 
 ```bash
-# Frontend type checking
-npx tsc --noEmit
+# Run all CI checks at once
+npm run check
 
-# Rust tests
-cd src-tauri
-cargo test --lib
+# Or auto-fix Rust formatting first, then run all checks
+npm run check:fix
+```
+
+**⚠️ NEVER commit code that fails CI checks!**
+
+Individual commands (for reference):
+```bash
+npx tsc --noEmit                    # TypeScript type check
+cd src-tauri && cargo fmt --all -- --check   # Rust format check
+cd src-tauri && cargo clippy --all-targets -- -D warnings  # Clippy lint
+cd src-tauri && cargo test --lib    # Unit tests
 ```
 
 ### Building for Production
@@ -116,7 +125,7 @@ Before creating an issue, please:
 3. **Test your changes**:
    - Ensure the app builds without errors
    - Test on your platform
-   - Run linting and tests
+   - Run `npm run check` to validate all CI checks pass
 
 4. **Commit your changes**:
    - Use clear, descriptive commit messages
