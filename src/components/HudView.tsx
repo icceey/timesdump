@@ -116,13 +116,14 @@ export default function HudView() {
   return (
     <div
       className="hud-container h-full flex items-center justify-center"
+      data-tauri-drag-region
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
     >
       <div
         className="
-          no-select cursor-pointer
+          no-select cursor-move
           w-full h-full
           flex flex-col items-center justify-center
           px-5 py-3
@@ -130,6 +131,7 @@ export default function HudView() {
           hover:opacity-90
           active:opacity-75
         "
+        data-tauri-drag-region
       >
         {/* Main time display */}
         <div className="text-[22px] font-medium tracking-tight text-black/85 dark:text-white/90 text-center font-mono">

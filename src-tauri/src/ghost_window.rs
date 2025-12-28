@@ -4,7 +4,8 @@ use tauri::{PhysicalPosition, WebviewWindow};
 use crate::HudPosition;
 
 /// Padding from screen edges in pixels
-const SCREEN_EDGE_PADDING: i32 = 20;
+/// Set to 48px to avoid overlapping with system UI elements (menu bar, dock, sidebars)
+const SCREEN_EDGE_PADDING: i32 = 48;
 
 /// Calculate the window position based on HudPosition and screen/window dimensions
 fn calculate_hud_position(
