@@ -56,6 +56,7 @@ pub struct HudPayload {
     pub raw_value: String,
     pub timestamp_seconds: i64,
     pub is_milliseconds: bool,
+    pub relative_time: String,
 }
 
 /// TimeParser handles validation and parsing of timestamp strings
@@ -75,6 +76,69 @@ impl TimeParser {
     /// Get the configured HUD position
     pub fn get_hud_position(&self) -> HudPosition {
         self.config.hud_position
+    }
+
+    /// Calculate relative time from now
+    fn calculate_relative_time(timestamp_seconds: i64) -> String {
+        let now = Utc::now().timestamp();
+        let diff_seconds = timestamp_seconds - now;
+        let abs_diff = diff_seconds.abs();
+
+        // Determine if past or future
+        let is_past = diff_seconds < 0;
+
+        // Calculate time units
+        let seconds = abs_diff;
+        let minutes = seconds / 60;
+        let hours = minutes / 60;
+        let days = hours / 24;
+        let months = days / 30;
+        let years = days / 365;
+
+        // Format the relative time string
+        if years > 0 {
+            format!(
+                "{} year{} {}",
+                years,
+                if years > 1 { "s" } else { "" },
+                if is_past { "ago" } else { "later" }
+            )
+        } else if months > 0 {
+            format!(
+                "{} month{} {}",
+                months,
+                if months > 1 { "s" } else { "" },
+                if is_past { "ago" } else { "later" }
+            )
+        } else if days > 0 {
+            format!(
+                "{} day{} {}",
+                days,
+                if days > 1 { "s" } else { "" },
+                if is_past { "ago" } else { "later" }
+            )
+        } else if hours > 0 {
+            format!(
+                "{} hour{} {}",
+                hours,
+                if hours > 1 { "s" } else { "" },
+                if is_past { "ago" } else { "later" }
+            )
+        } else if minutes > 0 {
+            format!(
+                "{} minute{} {}",
+                minutes,
+                if minutes > 1 { "s" } else { "" },
+                if is_past { "ago" } else { "later" }
+            )
+        } else {
+            format!(
+                "{} second{} {}",
+                seconds,
+                if seconds > 1 { "s" } else { "" },
+                if is_past { "ago" } else { "later" }
+            )
+        }
     }
 
     /// Parse a clipboard string and return HudPayload if valid
@@ -114,11 +178,15 @@ impl TimeParser {
         // Step 6: Format the time
         let formatted_time = datetime.format(&self.config.time_format).to_string();
 
+        // Step 7: Calculate relative time
+        let relative_time = Self::calculate_relative_time(timestamp_seconds);
+
         Some(HudPayload {
             formatted_time,
             raw_value: trimmed.to_string(),
             timestamp_seconds,
             is_milliseconds,
+            relative_time,
         })
     }
 }
@@ -301,5 +369,24 @@ mod tests {
 
         let result = parser.parse("  1704067200  ");
         assert!(result.is_some());
+    }
+
+    #[test]
+    fn test_relative_time_included() {
+        let config = TimestampConfig::default();
+        let parser = TimeParser::new(config);
+
+        // Parse a timestamp from the past (2024-01-01)
+        let result = parser.parse("1704067200");
+        assert!(result.is_some());
+        let payload = result.unwrap();
+        
+        // Verify relative_time field is populated and contains expected keywords
+        assert!(!payload.relative_time.is_empty());
+        assert!(
+            payload.relative_time.contains("ago") || payload.relative_time.contains("later"),
+            "relative_time should contain 'ago' or 'later', got: {}",
+            payload.relative_time
+        );
     }
 }

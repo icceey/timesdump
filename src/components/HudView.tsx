@@ -14,6 +14,7 @@ interface HudPayload {
   raw_value: string;
   timestamp_seconds: number;
   is_milliseconds: boolean;
+  relative_time: string;
 }
 
 export default function HudView() {
@@ -136,6 +137,11 @@ export default function HudView() {
         {/* Main time display */}
         <div className="text-[22px] font-medium tracking-tight text-black/85 dark:text-white/90 text-center font-mono">
           {payload.formatted_time}
+        </div>
+        
+        {/* Relative time display */}
+        <div className="mt-1 text-[13px] text-black/60 dark:text-white/65 tracking-wide">
+          {payload.relative_time}
         </div>
         
         {/* Metadata row */}
