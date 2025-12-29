@@ -9,6 +9,10 @@ const DEFAULT_DISPLAY_DURATION_MS = 3000;
 /** Shorter duration when resuming from hover */
 const HOVER_RESUME_DURATION_MS = 2000;
 
+/** Constants for relative time calculation */
+const DAYS_PER_MONTH = 30;
+const DAYS_PER_YEAR = 365;
+
 interface HudPayload {
   formatted_time: string;
   raw_value: string;
@@ -24,12 +28,12 @@ function calculateRelativeTime(timestampSeconds: number, t: (key: string, option
   const isPast = diffSeconds < 0;
 
   // Calculate time units
-  const seconds = absDiff;
+  const seconds = Math.floor(absDiff);
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
-  const months = Math.floor(days / 30);
-  const years = Math.floor(days / 365);
+  const months = Math.floor(days / DAYS_PER_MONTH);
+  const years = Math.floor(days / DAYS_PER_YEAR);
 
   // Format the relative time string with i18n
   if (years > 0) {
