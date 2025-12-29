@@ -14,7 +14,37 @@ interface HudPayload {
   raw_value: string;
   timestamp_seconds: number;
   is_milliseconds: boolean;
-  relative_time: string;
+}
+
+/** Calculate relative time from timestamp */
+function calculateRelativeTime(timestampSeconds: number, t: (key: string, options?: any) => string): string {
+  const now = Math.floor(Date.now() / 1000);
+  const diffSeconds = timestampSeconds - now;
+  const absDiff = Math.abs(diffSeconds);
+  const isPast = diffSeconds < 0;
+
+  // Calculate time units
+  const seconds = absDiff;
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const months = Math.floor(days / 30);
+  const years = Math.floor(days / 365);
+
+  // Format the relative time string with i18n
+  if (years > 0) {
+    return t(isPast ? "hud.relative.yearsAgo" : "hud.relative.yearsLater", { count: years });
+  } else if (months > 0) {
+    return t(isPast ? "hud.relative.monthsAgo" : "hud.relative.monthsLater", { count: months });
+  } else if (days > 0) {
+    return t(isPast ? "hud.relative.daysAgo" : "hud.relative.daysLater", { count: days });
+  } else if (hours > 0) {
+    return t(isPast ? "hud.relative.hoursAgo" : "hud.relative.hoursLater", { count: hours });
+  } else if (minutes > 0) {
+    return t(isPast ? "hud.relative.minutesAgo" : "hud.relative.minutesLater", { count: minutes });
+  } else {
+    return t(isPast ? "hud.relative.secondsAgo" : "hud.relative.secondsLater", { count: seconds });
+  }
 }
 
 export default function HudView() {
@@ -141,7 +171,7 @@ export default function HudView() {
         
         {/* Relative time display */}
         <div className="mt-1 text-[13px] text-black/60 dark:text-white/65 tracking-wide">
-          {payload.relative_time}
+          {calculateRelativeTime(payload.timestamp_seconds, t)}
         </div>
         
         {/* Metadata row */}
