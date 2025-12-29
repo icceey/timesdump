@@ -24,6 +24,7 @@
         "alwaysOnTop": true,
         "skipTaskbar": true,
         "visible": false,
+        "acceptFirstMouse": true,
         "url": "index.html#/hud"
       },
       {

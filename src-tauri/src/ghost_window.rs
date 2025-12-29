@@ -81,7 +81,7 @@ pub fn setup_ghost_window(window: &WebviewWindow) {
 #[cfg(target_os = "macos")]
 fn setup_ghost_window_macos(window: &WebviewWindow) {
     use objc2::msg_send;
-    use objc2::runtime::AnyObject;
+    use objc2::runtime::{AnyObject, Bool};
     use objc2_app_kit::{NSFloatingWindowLevel, NSWindowCollectionBehavior, NSWindowStyleMask};
 
     // NSNonactivatingPanelMask is not exposed directly in objc2-app-kit
@@ -111,6 +111,9 @@ fn setup_ghost_window_macos(window: &WebviewWindow) {
 
             // Don't show in mission control
             let _: () = msg_send![ns_win, setHidesOnDeactivate: false];
+
+            // Enable mouse moved events for better interaction
+            let _: () = msg_send![ns_win, setAcceptsMouseMovedEvents: Bool::YES];
 
             debug!("macOS ghost window configured");
         }
