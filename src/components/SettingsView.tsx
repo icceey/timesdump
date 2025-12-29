@@ -60,6 +60,11 @@ export default function SettingsView() {
     }
   }, []);
 
+  // Set window title based on current language
+  useEffect(() => {
+    getCurrentWindow().setTitle(t("settings.title"));
+  }, [t]);
+
   // Load settings on mount and when window gains focus
   useEffect(() => {
     loadSettingsFromStore();
