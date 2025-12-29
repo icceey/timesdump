@@ -56,6 +56,8 @@ export default function HudView() {
   const [payload, setPayload] = useState<HudPayload | null>(null);
   const [visible, setVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [isPinned, setIsPinned] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
   const [displayDuration, setDisplayDuration] = useState(DEFAULT_DISPLAY_DURATION_MS);
   
   // Use refs to avoid stale closures and prevent effect re-runs
@@ -107,6 +109,7 @@ export default function HudView() {
     const unlisten = listen<HudPayload>("show_hud", (event) => {
       setPayload(event.payload);
       setVisible(true);
+      setIsPinned(false); // Reset pin state on new timestamp
       // Use ref to get current duration value
       scheduleHide(displayDurationRef.current);
     });
@@ -125,24 +128,46 @@ export default function HudView() {
 
   const handleMouseLeave = useCallback(() => {
     setIsHovered(false);
-    // Only schedule hide if still visible
-    if (visible) {
+    // Only schedule hide if still visible and not pinned
+    if (visible && !isPinned) {
       scheduleHide(HOVER_RESUME_DURATION_MS);
     }
-  }, [visible, scheduleHide]);
+  }, [visible, isPinned, scheduleHide]);
 
-  // Handle click to copy
-  const handleClick = async () => {
-    if (payload) {
+  // Handle copy action
+  const handleCopy = useCallback(async () => {
+    if (payload && !copySuccess) {
       try {
         await invoke("copy_result", { text: payload.formatted_time });
-        setVisible(false);
-        await invoke("hide_hud");
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 1500);
       } catch (error) {
         console.error("Failed to copy:", error);
       }
     }
-  };
+  }, [payload, copySuccess]);
+
+  // Handle pin toggle
+  const handlePinToggle = useCallback(() => {
+    setIsPinned((prev) => {
+      const newPinned = !prev;
+      if (newPinned) {
+        // When pinning, clear any pending hide timeout
+        clearHideTimeout();
+      } else {
+        // When unpinning, schedule hide
+        scheduleHide(HOVER_RESUME_DURATION_MS);
+      }
+      return newPinned;
+    });
+  }, [clearHideTimeout, scheduleHide]);
+
+  // Handle close action
+  const handleClose = useCallback(async () => {
+    setVisible(false);
+    setIsPinned(false);
+    await invoke("hide_hud").catch(console.error);
+  }, []);
 
   if (!visible || !payload) {
     return <div className="hud-container h-full" />;
@@ -150,23 +175,20 @@ export default function HudView() {
 
   return (
     <div
-      className="hud-container h-full flex items-center justify-center"
+      className="hud-container h-full flex items-center"
+      style={{ paddingRight: "12px" }}
       data-tauri-drag-region
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={handleClick}
     >
+      {/* Content area */}
       <div
         className="
-          no-select cursor-move
-          w-full h-full
+          no-select cursor-move pointer-events-none
+          flex-1 h-full
           flex flex-col items-center justify-center
-          px-5 py-3
-          transition-opacity
-          hover:opacity-90
-          active:opacity-75
+          pl-5 pr-3 py-3
         "
-        data-tauri-drag-region
       >
         {/* Main time display */}
         <div className="text-[22px] font-medium tracking-tight text-black/85 dark:text-white/90 text-center font-mono">
@@ -179,22 +201,82 @@ export default function HudView() {
         </div>
         
         {/* Metadata row */}
-        <div className="mt-1.5 flex items-center gap-3 text-[11px] text-black/45 dark:text-white/50">
-          <span className="uppercase tracking-wide">
-            {payload.is_milliseconds ? t("hud.milliseconds") : t("hud.seconds")}
-          </span>
-          <span className="text-black/25 dark:text-white/25">•</span>
+        <div className="mt-1.5 text-[13px] text-black/45 dark:text-white/50">
           <span className="font-mono">
             {payload.raw_value.length > 13 
               ? payload.raw_value.slice(0, 13) 
               : payload.raw_value}
           </span>
         </div>
-        
-        {/* Click hint */}
-        <div className="mt-2 text-[10px] text-black/35 dark:text-white/40 tracking-wide">
-          {t("hud.clickToCopy")}
-        </div>
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex flex-col gap-1.5 p-3">
+        {/* Copy button */}
+        <button
+          onClick={handleCopy}
+          className={`
+            w-7 h-7 flex items-center justify-center
+            rounded-md
+            transition-colors
+            ${copySuccess
+              ? "bg-green-500/80 text-white"
+              : "bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 active:bg-black/15 dark:active:bg-white/25 text-black/60 dark:text-white/70"
+            }
+          `}
+          title={t("hud.copy")}
+        >
+          {copySuccess ? (
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+            </svg>
+          )}
+        </button>
+
+        {/* Pin button */}
+        <button
+          onClick={handlePinToggle}
+          className={`
+            w-7 h-7 flex items-center justify-center
+            rounded-md
+            transition-colors
+            ${isPinned 
+              ? "bg-blue-500/80 text-white hover:bg-blue-500/90 active:bg-blue-600"
+              : "bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 active:bg-black/15 dark:active:bg-white/25 text-black/60 dark:text-white/70"
+            }
+          `}
+          title={t(isPinned ? "hud.unpin" : "hud.pin")}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" x2="12" y1="17" y2="22"/>
+            <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/>
+          </svg>
+        </button>
+
+        {/* Close button */}
+        <button
+          onClick={handleClose}
+          className="
+            w-7 h-7 flex items-center justify-center
+            rounded-md
+            bg-black/5 dark:bg-white/10
+            hover:bg-red-500/80 hover:text-white
+            active:bg-red-600
+            text-black/60 dark:text-white/70
+            transition-colors
+          "
+          title={t("hud.close")}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 6 6 18"/>
+            <path d="m6 6 12 12"/>
+          </svg>
+        </button>
       </div>
     </div>
   );

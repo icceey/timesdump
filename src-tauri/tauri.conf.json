@@ -16,8 +16,8 @@
       {
         "label": "hud",
         "title": "Timesdump HUD",
-        "width": 280,
-        "height": 90,
+        "width": 340,
+        "height": 110,
         "resizable": false,
         "decorations": false,
         "transparent": true,

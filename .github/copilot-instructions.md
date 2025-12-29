@@ -4,197 +4,136 @@
 
 ## Critical Rules
 
-1. **Always run CI check before committing** - After ANY code change, run `npm run check` to validate all CI checks pass. Use `npm run check:fix` to auto-fix Rust formatting issues first. **NEVER commit code that fails CI checks.**
-2. **Consult documentation when uncertain** - Check local docs, [docs.rs](https://docs.rs), [Tauri v2 docs](https://v2.tauri.app/reference/config/), or relevant API references before implementing unfamiliar features.
-3. **Update README if needed** - When adding features, changing commands, or modifying dependencies, check if `README.md` needs corresponding updates.
+1. **Always run CI check before committing** - Run `npm run check` after ANY code change. Use `npm run check:fix` to auto-fix Rust formatting first. **NEVER commit code that fails CI checks.**
+2. **Consult documentation when uncertain** - Check [docs.rs](https://docs.rs), [Tauri v2 docs](https://v2.tauri.app/reference/config/), or relevant API references.
+3. **Update README if needed** - When adding features or changing commands.
 
 ---
 
 ## Project Summary
 
-**Timesdump** is a Tauri v2 cross-platform desktop app (~2,500 lines) that monitors the clipboard for Unix timestamps and displays them as human-readable dates in a non-focus-stealing HUD popup. Runs silently in system tray with no dock/taskbar icon.
+**Timesdump** is a Tauri v2 cross-platform desktop app that monitors the clipboard for Unix timestamps and displays them as human-readable dates in a non-focus-stealing HUD popup. Runs silently in system tray.
 
 | Component | Technology |
 |-----------|------------|
 | Backend | Rust (2021 edition) |
 | Frontend | React 19 + TypeScript + Vite 7 |
-| Framework | Tauri v2 |
+| Framework | Tauri v2 (with autostart, positioner, store plugins) |
 | Styling | Tailwind CSS v4 |
 | i18n | react-i18next |
 
 ---
 
-## Build & Validation Commands
+## Commands
 
-**ALWAYS run CI check after finishing changes or before committing. CI runs all checks on Linux.**
-
-### Quick CI Validation (REQUIRED before committing)
 ```bash
-npm run check        # Run all CI checks (TypeScript, Rust format, Clippy, tests)
-npm run check:fix    # Auto-fix Rust formatting first, then run all checks
-```
-
-### Individual Commands (for reference)
-```bash
-npm install                         # Install dependencies (run first)
-npx tsc --noEmit                    # TypeScript type check
-cd src-tauri && cargo fmt --all -- --check   # Rust format check
-cd src-tauri && cargo clippy --all-targets -- -D warnings  # Clippy lint
-cd src-tauri && cargo test --lib    # Unit tests
-```
-
-### Development & Build
-```bash
-npm run tauri dev                   # Hot reload dev server on port 1420
-npm run tauri build                 # Production build
-```
-
-### Fixing Format Issues
-```bash
-cd src-tauri && cargo fmt --all     # Auto-fix Rust formatting
-# Or use: npm run check:fix         # Fix and validate in one command
+npm run check        # CI validation (TypeScript, Rust format, Clippy, tests)
+npm run check:fix    # Auto-fix Rust formatting, then validate
+npm run tauri dev    # Hot reload dev server (port 1420)
+npm run tauri build  # Production build
 ```
 
 ---
 
-## CI Pipeline (GitHub Actions)
+## Key Architecture
 
-The `build.yml` workflow runs on every PR to `master`:
-
-| Step | Platform | Command |
-|------|----------|---------|
-| TypeScript check | Linux | `npx tsc --noEmit` |
-| Rust format | Linux | `cargo fmt --all -- --check` |
-| Clippy lint | Linux | `cargo clippy --all-targets -- -D warnings` |
-| Unit tests | Linux | `cargo test --lib` |
-| App build | macOS, Windows | `npm run tauri build` |
-
-**Key:** Linux runs ALL lint/test checks. macOS/Windows only run builds.
-
----
-
-## Project Layout
-
-```
-timesdump/
-├── src/                          # Frontend (React + TypeScript)
-│   ├── App.tsx                   # View router (hash-based: #/hud, #/settings)
-│   ├── components/
-│   │   ├── HudView.tsx           # HUD popup display
-│   │   └── SettingsView.tsx      # Settings panel UI
-│   ├── lib/i18n.ts               # Internationalization setup
-│   └── locales/
-│       ├── en.json               # English strings
-│       └── zh-CN.json            # Chinese strings
-├── src-tauri/                    # Backend (Rust)
-│   ├── src/
-│   │   ├── main.rs               # Entry point, Tauri commands, app setup
-│   │   ├── lib.rs                # ClipboardMonitor, TimeParser, structs
-│   │   ├── ghost_window.rs       # Platform-specific window APIs
-│   │   └── tray.rs               # System tray menu
-│   ├── Cargo.toml                # Rust dependencies
-│   └── tauri.conf.json           # Window defs, plugins, bundle config
-├── package.json                  # Node.js deps (requires Node 24+)
-├── vite.config.ts                # Vite config (port 1420)
-└── tsconfig.json                 # TypeScript strict mode config
-```
-
----
-
-## Key Architecture Rules
-
-1. **HUD window MUST never steal focus** - uses platform-specific non-activating window APIs
+1. **HUD window MUST never steal focus** - `ghost_window.rs` uses platform-specific non-activating window APIs
 2. **Two windows:** `hud` (transparent overlay) and `settings` (standard window)
-3. **Clipboard polling:** 350ms intervals in dedicated Rust thread
-4. **Year-range filtering:** Excludes phone numbers/verification codes
+3. **Clipboard monitoring:** `ClipboardMonitor` in `lib.rs` polls every 350ms via `arboard` crate
+4. **Year-range filtering:** Excludes phone numbers/verification codes (configurable min/max year)
 
 ---
 
-## Key Files by Purpose
+## Core Structs (lib.rs)
+
+```rust
+// Configuration - stored in settings.json via tauri-plugin-store
+pub struct TimestampConfig {
+    pub min_year: i32,              // Filter: minimum valid year
+    pub max_year: i32,              // Filter: maximum valid year
+    pub display_duration_ms: u64,   // HUD display time in ms
+    pub time_format: String,        // chrono format string
+    pub hud_position: HudPosition,  // TopLeft, TopRight, BottomLeft, BottomRight, TopCenter, BottomCenter
+}
+
+// Event payload sent to HUD via app_handle.emit("show_hud", payload)
+pub struct HudPayload {
+    pub formatted_time: String,     // Formatted datetime string
+    pub raw_value: String,          // Original clipboard text
+    pub timestamp_seconds: i64,     // Parsed Unix timestamp
+    pub is_milliseconds: bool,      // Was input 13-digit ms?
+}
+```
+
+---
+
+## Key Files
 
 | Task | File(s) |
 |------|---------|
-| Add Tauri command | `src-tauri/src/main.rs` (invoke_handler) |
-| Core logic/structs | `src-tauri/src/lib.rs` (TimestampConfig, HudPayload) |
-| Platform window behavior | `src-tauri/src/ghost_window.rs` |
-| Tray menu items | `src-tauri/src/tray.rs` |
-| Window definitions | `src-tauri/tauri.conf.json` → app.windows |
-| Add UI setting | `src/components/SettingsView.tsx` |
-| Add translation | `src/locales/en.json` + `src/locales/zh-CN.json` |
+| Add Tauri command | `main.rs` → `invoke_handler![]` |
+| Core structs/logic | `lib.rs` → `TimestampConfig`, `HudPayload`, `TimeParser`, `ClipboardMonitor` |
+| Platform window APIs | `lib.rs` → `ghost_window` module |
+| Tray menu | `lib.rs` → `tray` module |
+| Window definitions | `tauri.conf.json` → `app.windows` |
+| Add UI setting | `SettingsView.tsx` |
+| Add translation | `src/locales/en.json` + `zh-CN.json` (BOTH required) |
 
 ---
 
 ## Common Patterns
 
 ### Adding a New Setting
-1. Add field to `TimestampConfig` struct in `lib.rs`
-2. Update `load_settings`/`save_settings` commands in `main.rs`
-3. Add UI control in `SettingsView.tsx`
-4. Add translation keys to BOTH `src/locales/en.json` and `src/locales/zh-CN.json`
+1. Add field to `TimestampConfig` in `lib.rs` with `#[serde(default)]` if optional
+2. Update `load_settings`/`save_settings` in `main.rs` (individual params, not struct)
+3. Add UI in `SettingsView.tsx`
+4. Add i18n keys to BOTH locale files
 
-### Rust → Frontend Communication
-- **Command:** `invoke("command_name", { args })` from frontend
-- **Event:** `app_handle.emit("event_name", payload)` → `listen("event_name", callback)`
+### Rust ↔ Frontend Communication
+```typescript
+// Command (request-response)
+const result = await invoke("command_name", { param1: value });
 
-### Platform-Specific Rust Code
+// Event (push from Rust)
+const unlisten = await listen("show_hud", (event) => { /* handle payload */ });
+```
+
+### Platform-Specific Code
 ```rust
 #[cfg(target_os = "macos")]
-fn setup_macos() { /* ... */ }
+use objc2_app_kit::NSWindow;  // Uses objc2 bindings
 
 #[cfg(target_os = "windows")]
-fn setup_windows() { /* ... */ }
-
-#[cfg(target_os = "linux")]
-fn setup_linux() { /* ... */ }
+use windows::Win32::UI::WindowsAndMessaging::*;
 ```
 
 ---
 
-## Tauri Commands Reference
+## Tauri Commands (main.rs)
 
-Defined in `main.rs`, callable via `invoke()`:
-
-| Command | Purpose |
-|---------|---------|
-| `get_system_locale` | Get OS locale for i18n |
-| `copy_result` | Copy string to clipboard |
-| `hide_hud` | Hide the HUD window |
-| `show_settings` | Show settings window |
-| `toggle_pause` | Pause/resume clipboard monitoring |
-| `save_settings` | Persist settings to store |
-| `load_settings` | Load settings from store |
+| Command | Signature |
+|---------|-----------|
+| `get_system_locale` | `() -> String` |
+| `copy_result` | `(text: String) -> Result<(), String>` |
+| `hide_hud` | `async (app: AppHandle) -> Result<(), String>` |
+| `show_settings` | `async (app: AppHandle) -> Result<(), String>` |
+| `toggle_pause` | `(state: State<Arc<ClipboardMonitor>>) -> bool` |
+| `save_settings` | `async (app, min_year, max_year, display_duration_ms, time_format, hud_position)` |
+| `load_settings` | `async (app: AppHandle) -> Result<TimestampConfig, String>` |
 
 ---
 
 ## Testing
 
-- **Rust unit tests:** `cargo test --lib` (5 tests for TimeParser)
-- **TypeScript check:** `npx tsc --noEmit`
-- **Manual testing required** for platform-specific window behavior
-- Test timestamps: seconds (10 digits, e.g. `1704067200`), milliseconds (13 digits, e.g. `1704067200000`)
+- **Rust tests:** `cargo test --lib` (TimeParser validation)
+- **TypeScript:** `npx tsc --noEmit`
+- **Test timestamps:** `1704067200` (10-digit seconds), `1704067200000` (13-digit ms)
 
 ---
 
-## Dependencies & Versions
+## Known Issues
 
-| Tool | Version | Notes |
-|------|---------|-------|
-| Node.js | ≥24.0.0 | Required in package.json engines |
-| Rust | stable (2021 edition) | Latest stable recommended |
-| Tauri CLI | v2.x | Installed via npm devDependencies |
-
-### Linux System Dependencies (for CI)
-```bash
-sudo apt-get install -y pkg-config build-essential libglib2.0-dev \
-  libgtk-3-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev \
-  librsvg2-dev libssl-dev
-```
-
----
-
-## Known Issues & Workarounds
-
-1. **Rust formatting:** CI enforces `cargo fmt --all -- --check`. Always run `cargo fmt --all` before committing.
-2. **Port conflict:** Dev server uses port 1420. Kill existing processes if blocked.
-3. **macOS Xcode:** Requires Xcode Command Line Tools (`xcode-select --install`)
-4. **Windows build:** Requires Visual Studio Build Tools with C++ workload
+1. **Rust formatting:** CI enforces `cargo fmt`. Run `npm run check:fix` before committing.
+2. **Port 1420 conflict:** Kill existing processes if dev server fails to start.
+3. **macOS:** Requires Xcode CLI tools (`xcode-select --install`)
+4. **Windows:** Requires VS Build Tools with C++ workload

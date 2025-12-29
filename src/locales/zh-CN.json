@@ -2,7 +2,10 @@
   "hud": {
     "seconds": "秒",
     "milliseconds": "毫秒",
-    "clickToCopy": "点击复制",
+    "copy": "复制",
+    "pin": "固定",
+    "unpin": "取消固定",
+    "close": "关闭",
     "relative": {
       "secondsAgo": "{{count}}秒前",
       "minutesAgo": "{{count}}分钟前",

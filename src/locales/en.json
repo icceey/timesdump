@@ -2,7 +2,10 @@
   "hud": {
     "seconds": "Seconds",
     "milliseconds": "Milliseconds",
-    "clickToCopy": "Click to copy",
+    "copy": "Copy",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "close": "Close",
     "relative": {
       "secondsAgo_one": "{{count}} second ago",
       "secondsAgo_other": "{{count}} seconds ago",
