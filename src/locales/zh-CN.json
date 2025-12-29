@@ -2,7 +2,21 @@
   "hud": {
     "seconds": "秒",
     "milliseconds": "毫秒",
-    "clickToCopy": "点击复制"
+    "clickToCopy": "点击复制",
+    "relative": {
+      "secondsAgo": "{{count}}秒前",
+      "minutesAgo": "{{count}}分钟前",
+      "hoursAgo": "{{count}}小时前",
+      "daysAgo": "{{count}}天前",
+      "monthsAgo": "{{count}}个月前",
+      "yearsAgo": "{{count}}年前",
+      "secondsLater": "{{count}}秒后",
+      "minutesLater": "{{count}}分钟后",
+      "hoursLater": "{{count}}小时后",
+      "daysLater": "{{count}}天后",
+      "monthsLater": "{{count}}个月后",
+      "yearsLater": "{{count}}年后"
+    }
   },
   "settings": {
     "title": "设置",
