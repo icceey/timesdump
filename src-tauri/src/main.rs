@@ -33,9 +33,13 @@ async fn save_settings(
     max_year: i32,
     display_duration_ms: u64,
     time_format: String,
-    hud_position: HudPosition,
+    hud_position: String,
 ) -> Result<(), String> {
     use tauri_plugin_store::StoreExt;
+
+    // Parse hud_position string to enum
+    let hud_position_enum: HudPosition =
+        serde_json::from_value(serde_json::json!(hud_position)).unwrap_or_default();
 
     let store = app.store("settings.json").map_err(|e| e.to_string())?;
 
@@ -46,8 +50,21 @@ async fn save_settings(
         serde_json::json!(display_duration_ms),
     );
     store.set("time_format", serde_json::json!(time_format));
-    store.set("hud_position", serde_json::json!(hud_position));
+    store.set("hud_position", serde_json::json!(hud_position_enum));
     store.save().map_err(|e| e.to_string())?;
+
+    // Update the clipboard monitor with new config
+    let new_config = TimestampConfig {
+        min_year,
+        max_year,
+        display_duration_ms,
+        time_format,
+        hud_position: hud_position_enum,
+    };
+    if let Some(monitor) = app.try_state::<Arc<ClipboardMonitor>>() {
+        monitor.update_config(new_config);
+        info!("Updated clipboard monitor config");
+    }
 
     Ok(())
 }
@@ -143,8 +160,46 @@ fn main() {
             .expect("Error setting signal handler");
             info!("Setting up Timesdump application");
 
-            // Initialize clipboard monitor with default config
-            let config = TimestampConfig::default();
+            // Load saved settings or use defaults
+            let config = {
+                use tauri_plugin_store::StoreExt;
+                if let Ok(store) = app.store("settings.json") {
+                    let min_year = store
+                        .get("min_year")
+                        .and_then(|v| v.as_i64())
+                        .map(|v| v as i32)
+                        .unwrap_or(1990);
+                    let max_year = store
+                        .get("max_year")
+                        .and_then(|v| v.as_i64())
+                        .map(|v| v as i32)
+                        .unwrap_or(2050);
+                    let display_duration_ms = store
+                        .get("display_duration_ms")
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or(5000);
+                    let time_format = store
+                        .get("time_format")
+                        .and_then(|v| v.as_str().map(String::from))
+                        .unwrap_or_else(|| "%Y-%m-%d %H:%M:%S".to_string());
+                    let hud_position = store
+                        .get("hud_position")
+                        .and_then(|v| serde_json::from_value(v.clone()).ok())
+                        .unwrap_or_default();
+
+                    info!("Loaded saved settings, hud_position: {:?}", hud_position);
+                    TimestampConfig {
+                        min_year,
+                        max_year,
+                        display_duration_ms,
+                        time_format,
+                        hud_position,
+                    }
+                } else {
+                    info!("Using default settings");
+                    TimestampConfig::default()
+                }
+            };
             let monitor = Arc::new(ClipboardMonitor::new(config));
 
             // Store monitor in app state

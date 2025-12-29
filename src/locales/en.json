@@ -53,6 +53,7 @@
     "yearRangeDesc": "Only show timestamps within this year range",
     "save": "Save Settings",
     "saving": "Saving...",
+    "saved": "Saved!",
     "tagline": "The Silent Timestamp Decoder"
   },
   "tray": {

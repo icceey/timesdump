@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { enable, disable, isEnabled } from "@tauri-apps/plugin-autostart";
 import { useTranslation } from "react-i18next";
 
@@ -40,39 +41,62 @@ export default function SettingsView() {
   });
   const [autostart, setAutostart] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Load settings on mount
+  // Load settings function
+  const loadSettingsFromStore = useCallback(async () => {
+    try {
+      const loaded = await invoke<Settings>("load_settings");
+      setSettings(loaded);
+    } catch (error) {
+      console.error("Failed to load settings:", error);
+    }
+
+    try {
+      const enabled = await isEnabled();
+      setAutostart(enabled);
+    } catch (error) {
+      console.error("Failed to check autostart:", error);
+    }
+  }, []);
+
+  // Load settings on mount and when window gains focus
   useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const loaded = await invoke<Settings>("load_settings");
-        setSettings(loaded);
-      } catch (error) {
-        console.error("Failed to load settings:", error);
-      }
+    loadSettingsFromStore();
 
-      try {
-        const enabled = await isEnabled();
-        setAutostart(enabled);
-      } catch (error) {
-        console.error("Failed to check autostart:", error);
-      }
+    // Listen for window focus to reload settings when window is shown
+    const setupFocusListener = async () => {
+      const currentWindow = getCurrentWindow();
+      const unlisten = await currentWindow.onFocusChanged(({ payload: focused }) => {
+        if (focused) {
+          loadSettingsFromStore();
+        }
+      });
+      return unlisten;
     };
 
-    loadSettings();
-  }, []);
+    const unlistenPromise = setupFocusListener();
+
+    return () => {
+      unlistenPromise.then((unlisten) => unlisten());
+    };
+  }, [loadSettingsFromStore]);
 
   // Save settings
   const saveSettings = async () => {
     setSaving(true);
+    setSaveSuccess(false);
     try {
       await invoke("save_settings", {
-        min_year: settings.min_year,
-        max_year: settings.max_year,
-        display_duration_ms: settings.display_duration_ms,
-        time_format: settings.time_format,
-        hud_position: settings.hud_position,
+        minYear: settings.min_year,
+        maxYear: settings.max_year,
+        displayDurationMs: settings.display_duration_ms,
+        timeFormat: settings.time_format,
+        hudPosition: settings.hud_position,
       });
+      setSaveSuccess(true);
+      // Hide success message after 2 seconds
+      setTimeout(() => setSaveSuccess(false), 2000);
     } catch (error) {
       console.error("Failed to save settings:", error);
     }
@@ -316,7 +340,7 @@ export default function SettingsView() {
           padding: '12px 0',
           borderRadius: 10,
           border: 'none',
-          background: '#3b82f6',
+          background: saveSuccess ? '#22c55e' : '#3b82f6',
           color: 'white',
           fontSize: 14,
           fontWeight: 600,
@@ -324,10 +348,10 @@ export default function SettingsView() {
           opacity: saving ? 0.6 : 1,
           transition: 'background 0.2s'
         }}
-        onMouseOver={(e) => !saving && (e.currentTarget.style.background = '#2563eb')}
-        onMouseOut={(e) => !saving && (e.currentTarget.style.background = '#3b82f6')}
+        onMouseOver={(e) => !saving && !saveSuccess && (e.currentTarget.style.background = '#2563eb')}
+        onMouseOut={(e) => !saving && !saveSuccess && (e.currentTarget.style.background = '#3b82f6')}
       >
-        {saving ? t("settings.saving") : t("settings.save")}
+        {saving ? t("settings.saving") : saveSuccess ? t("settings.saved") : t("settings.save")}
       </button>
 
       {/* Footer */}

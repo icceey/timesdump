@@ -41,6 +41,7 @@
     "yearRangeDesc": "仅显示此年份范围内的时间戳",
     "save": "保存设置",
     "saving": "保存中...",
+    "saved": "已保存!",
     "tagline": "静默时间戳解码器"
   },
   "tray": {
