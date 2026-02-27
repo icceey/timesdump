@@ -26,12 +26,12 @@
     "react-i18next": "^16.5.4"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.2.0",
+    "@tailwindcss/vite": "^4.2.1",
     "@tauri-apps/cli": "^2.10.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.4",
-    "autoprefixer": "^10.4.24",
+    "autoprefixer": "^10.4.27",
     "postcss": "^8.4.47",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.6.3",
