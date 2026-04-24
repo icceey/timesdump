@@ -15,7 +15,7 @@
     "check:fix": "cd src-tauri && cargo fmt --all && npx tsc --noEmit && cargo clippy --all-targets -- -D warnings && cargo test --lib"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/api": "^2.10.1",
     "@tauri-apps/plugin-autostart": "^2.0.0",
     "@tauri-apps/plugin-clipboard-manager": "^2.0.0",
     "@tauri-apps/plugin-positioner": "^2.0.0",
